@@ -1,7 +1,12 @@
-from flask import Flask, redirect, url_for, render_template
+from flask import Flask, redirect, url_for, render_template, session, flash, request
+
+users = {}
+pending_users = {}
+admins = {"admin@admin.com": "admin"}
+
 
 app = Flask(__name__)
-
+app.secret_key = 'supersecretkey'
 
 @app.route("/")
 def index():
@@ -10,23 +15,72 @@ def index():
 
 @app.route("/home")
 def home():
-    return "Hello this is the home page"
+    if "username" in session:
+        return f"Hello {session['username']}, welcome to the home page!"
+    return redirect(url_for('login'))
 
 
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-
-
-@app.route("/log-in")
+@app.route("/log-in", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if not email or not password:
+            flash("Please enter both email and password.")
+            return render_template("login.html")
+
+        # Admin login
+        if email in admins and admins[email] == password:
+            session["email"] = email
+            session["role"] = "admin"
+            return redirect(url_for("admin"))
+
+        # User login
+        user = users.get(email)
+        if user and user["password"] == password:
+            if user["approved"]:
+                session["email"] = email
+                session["role"] = user["role"]
+                return redirect(url_for("index"))  # redirect to index page
+            else:
+                flash("Your account is pending admin approval.")
+        else:
+            flash("Invalid credentials.")
+
     return render_template("login.html")
 
-
-@app.route("/sign-up")
+@app.route("/sign-up", methods=["GET", "POST"])
 def signup():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+        role = request.form.get("role")  # 'company' or 'student'
+
+        if not email or not password or not confirm_password or not role:
+            flash("All fields are required.")
+        elif password != confirm_password:
+            flash("Passwords do not match.")
+        elif email in users or email in pending_users:
+            flash("Email already registered or pending approval.")
+        else:
+            # Add to pending users for admin approval
+            pending_users[email] = {"password": password, "role": role, "approved": False}
+            flash("Account created! Waiting for admin approval.")
+            return redirect(url_for("login"))
     return render_template("signup.html")
+
+
+@app.route("/logout")
+def logout():
+    session.pop("username", None)
+    flash("Logged out successfully.")
+    return redirect(url_for("index"))
 
 
 @app.route("/contactus")
@@ -34,9 +88,27 @@ def contactus():
     return render_template("contactus.html")
 
 
-@app.route("/admin")
+@app.route("/admin", methods=["GET", "POST"])
 def admin():
-    return redirect(url_for('index'))  # You can redirect to any valid endpoint
+    if "email" not in session or session["email"] not in admins:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        action = request.form.get("action")   # 'approve' or 'reject'
+        user_email = request.form.get("user_email")
+
+        if user_email in pending_users:
+            if action == "approve":
+                user_data = pending_users.pop(user_email)
+                user_data["approved"] = True
+                users[user_email] = user_data
+                flash(f"Approved {user_email}")
+            elif action == "reject":
+                pending_users.pop(user_email)
+                flash(f"Rejected {user_email}")
+
+    return render_template("admin.html", pending_users=pending_users)
+
 
 
 if __name__ == "__main__":

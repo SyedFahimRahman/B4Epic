@@ -9,10 +9,34 @@
   <div class="glass-container">
     <div class="signup-box">
       <h2>Sign-up</h2>
-      <form action="#" method="POST">
-        <input type="text" id="email" name="email" required placeholder="Email">
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flash-messages">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST">
+        <input type="email" id="email" name="email" required placeholder="Email">
+
         <input type="password" id="password" name="password" required placeholder="Password">
-          <input type="password" id="password" name="password" required placeholder="Confirm Password">
+
+        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm Password">
+
+        <div class="role-selection">
+          <label>
+            <input type="radio" name="role" value="student" required>
+            Student
+          </label>
+          <label>
+            <input type="radio" name="role" value="company" required>
+            Company
+          </label>
+        </div>
 
         <button type="submit">Sign-up</button>
       </form>

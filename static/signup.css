@@ -14,7 +14,7 @@ body {
 
 .glass-container {
     width: 300px;
-    height: 350px;
+    min-height: 420px; /* increased to fit form comfortably */
     position: relative;
     z-index: 1;
     background: rgba(255, 255, 255, 0.1);
@@ -33,9 +33,8 @@ body {
     -webkit-backdrop-filter: blur(5px);
     z-index: -1;
 }
-
 .signup-box {
-    max-width: 250px;
+    max-width: 260px;
     margin: 0 auto;
     text-align: center;
 }
@@ -54,7 +53,7 @@ form {
 
 input {
     padding: 10px;
-    margin-top: 25px;
+    margin-top: 15px; /* reduced from 25px */
     border: none;
     border-radius: 10px;
     background: transparent;
@@ -126,4 +125,21 @@ p {
     text-decoration: none;
     color: #fff;
     font-weight: bold;
+}
+.role-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    color: white;
+    font-size: 13px;
+}
+
+.role-selection label {
+    cursor: pointer;
+}
+
+.role-selection input[type="radio"] {
+    margin-right: 6px;
+    transform: scale(1.1);
+    vertical-align: middle;
 }
