@@ -1,4 +1,5 @@
-from app import app, db
+from extensions import db
+from app import app
 import models
 
 
