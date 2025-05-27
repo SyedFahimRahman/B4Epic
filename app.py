@@ -1,4 +1,6 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
+from flask_sqlalchemy import SQLAlchemy
+import config
 
 users = {}
 pending_users = {}
@@ -6,6 +8,9 @@ admins = {"admin@admin.com": "admin"}
 
 
 app = Flask(__name__)
+app.config.from_object(config)
+
+db = SQLAlchemy(app)
 app.secret_key = 'supersecretkey'
 
 @app.route("/")
