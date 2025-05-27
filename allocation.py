@@ -30,7 +30,7 @@ def run_allocation(round_number):
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())
 
-#     Go through each students and assigne based on preferences of the students
+#     Go through each students and assign based on preferences of the students
     for student, qca in sorted_students:
         if student.id in assigned_students:
             continue
