@@ -116,11 +116,6 @@ def admin():
     return render_template("admin.html", pending_users=pending_users)
 
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-
 #  creating route for allocation function of residency assignment
 
 @app.route('/run-allocation')
@@ -139,3 +134,9 @@ def view_assignments():
         company = Company.query.get(a.company_id)
         output.append(f"{student.first_name} {student.last_name} : {company.name}")
     return "<br>".join(output)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
