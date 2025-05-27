@@ -12,6 +12,4 @@ def home():
         return f"Hello {session['username']}, welcome to the home page!"
     return redirect(url_for("auth.login"))
 
-@public_bp.route("/contactus")
-def contactus():
-    return render_template("contactus.html")
+

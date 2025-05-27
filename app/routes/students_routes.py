@@ -4,6 +4,11 @@ from extensions import db
 
 student_bp = Blueprint('students', __name__)
 
+@student_bp.route('/list', methods=['GET'])
+def list():
+    if session.get('logged_in'):
+
+
 @student_bp.route('/rank-positions', methods=['GET', 'POST'])
 def rank_positions():
     if session.get('role') != 'student':

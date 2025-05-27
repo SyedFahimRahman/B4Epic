@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template, session, flash, request
+"""from flask import Flask, redirect, url_for, render_template, session, flash, request
 from extensions import db
 import config
 from allocation import run_allocation
@@ -139,4 +139,5 @@ def view_assignments():
 if __name__ == "__main__":
     app.run(debug=True)
 
+"""
 

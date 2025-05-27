@@ -1,6 +1,6 @@
 from app import app
 from extensions import db
-from app.models import User, Student, QCA, Company, RecidencyPosition, Preference, Round
+from app.models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
 from datetime import datetime
 
 with app.app_context():
@@ -31,10 +31,10 @@ with app.app_context():
     db.session.commit()
 
     # Residency Positions
-    residency1 = RecidencyPosition(company_id = company1.id, year = datetime.now().year,
+    residency1 = ResidencyPosition(company_id = company1.id, year = datetime.now().year,
                                    num_of_residencies = 2
                                    )
-    residency2 = RecidencyPosition(company_id = company2.id, year = datetime.now().year,
+    residency2 = ResidencyPosition(company_id = company2.id, year = datetime.now().year,
                                    num_of_residencies = 1
                                    )
     db.session.add_all([residency1, residency2])
