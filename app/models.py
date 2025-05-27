@@ -7,6 +7,7 @@ class User(db.Model):
     password = db.Column(db.String(100))
     role = db.Column(db.String(20))
     created_at = db.Column(db.DateTime)
+    is_approved = db.Column(db.Boolean, default=False)
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -63,7 +64,7 @@ class Ranking(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     rank_score = db.Column(db.Integer)
 
-class RecidencyPosition(db.Model):
+class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     year = db.Column(db.Integer)
@@ -80,3 +81,4 @@ class ISEResidencyTeam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
     email = db.Column(db.String(100))
+    

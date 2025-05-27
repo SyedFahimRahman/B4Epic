@@ -1,6 +1,6 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, RecidencyPosition, Preference, Round
+from app.models import User, Student, QCA, Company, RecidencyPosition, Preference, Round
 from datetime import datetime
 
 with app.app_context():

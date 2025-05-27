@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="signup-wrapper">
+<div class="login-wrapper">
   <div class="glass-container">
-    <div class="signup-box">
-      <h2>Sign-up</h2>
+    <div class="login-box">
+      <h2>Login</h2>
 
       {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -22,23 +22,17 @@
 
       <form method="POST">
         <input type="email" id="email" name="email" required placeholder="Email">
-
         <input type="password" id="password" name="password" required placeholder="Password">
 
-        <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm Password">
-
-        <div class="role-selection">
-          <label>
-            <input type="radio" name="role" value="student" required>
-            Student
-          </label>
-          <label>
-            <input type="radio" name="role" value="company" required>
-            Company
-          </label>
+        <div class="options">
+          <input type="checkbox" id="remember" name="remember">
+          <label for="remember">Remember me</label>
+          <a href="#">Forgot Password?</a>
         </div>
 
-        <button type="submit">Sign-up</button>
+        <button type="submit">Login</button>
+
+        <p>Don't have an account? <a href="{{ url_for('auth.signup') }}" id="register">Sign up</a></p>
       </form>
     </div>
   </div>

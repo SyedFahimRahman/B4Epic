@@ -30,17 +30,17 @@
             </tr>
           </thead>
           <tbody>
-            {% for email, info in pending_users.items() %}
+            {% for user in pending_users %}
             <tr>
-              <td>{{ email }}</td>
-              <td>{{ info.role }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.role }}</td>
               <td>
                 <form method="POST" style="display:inline;">
-                  <input type="hidden" name="user_email" value="{{ email }}">
+                  <input type="hidden" name="user_email" value="{{ user.username }}">
                   <button type="submit" name="action" value="approve">Approve</button>
                 </form>
                 <form method="POST" style="display:inline;">
-                  <input type="hidden" name="user_email" value="{{ email }}">
+                  <input type="hidden" name="user_email" value="{{ user.username }}">
                   <button type="submit" name="action" value="reject">Reject</button>
                 </form>
               </td>

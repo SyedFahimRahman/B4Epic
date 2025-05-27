@@ -2,7 +2,7 @@ from flask import Flask, redirect, url_for, render_template, session, flash, req
 from extensions import db
 import config
 from allocation import run_allocation
-from models import CompanyAssignment, Student, Company
+from app.models import CompanyAssignment, Student, Company
 users = {}
 pending_users = {}
 admins = {"admin@admin.com": "admin"}

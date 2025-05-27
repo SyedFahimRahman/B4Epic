@@ -1,5 +1,5 @@
 from extensions import db
-from models import Student, Preference, QCA, CompanyAssignment, RecidencyPosition, Round
+from app.models import Student, Preference, QCA, CompanyAssignment, ResidencyPosition, Round
 from datetime import datetime
 
 # function for allocation of students based on qca and preferences and company position availability
