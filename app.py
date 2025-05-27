@@ -1,11 +1,17 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
-
+from extensions import db
+import config
+from allocation import run_allocation
+from models import CompanyAssignment, Student, Company
 users = {}
 pending_users = {}
 admins = {"admin@admin.com": "admin"}
 
 
 app = Flask(__name__)
+app.config.from_object(config)
+db.init_app(app)
+
 app.secret_key = 'supersecretkey'
 
 @app.route("/")
@@ -110,6 +116,27 @@ def admin():
     return render_template("admin.html", pending_users=pending_users)
 
 
+#  creating route for allocation function of residency assignment
+
+@app.route('/run-allocation')
+def run_allocation_route():
+    result = run_allocation(round_number = 1)
+    return result
+
+# creating route for company assignments
+
+@app.route('/view-assignments')
+def view_assignments():
+    assignments = CompanyAssignment.query.all()
+    output = []
+    for a in assignments:
+        student = Student.query.get(a.student_id)
+        company = Company.query.get(a.company_id)
+        output.append(f"{student.first_name} {student.last_name} : {company.name}")
+    return "<br>".join(output)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
