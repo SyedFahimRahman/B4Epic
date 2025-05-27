@@ -36,9 +36,19 @@ with app.app_context():
     db.session.commit()
 
     # qca scores
-    qca1 = QCA(student_id = student1.id, semester = 1, qca_score = 3.7)
-    qca2 = QCA(student_id = student2.id, semester = 1, qca_score = 3.9)
-    db.session.add_all([qca1, qca2])
+    qca1 = QCA(student_id=student1.id, semester=1, qca_score=3.7)
+    qca2 = QCA(student_id=student2.id, semester=1, qca_score=3.9)
+    qca3 = QCA(student_id=student3.id, semester=1, qca_score=3.6)
+    qca4 = QCA(student_id=student4.id, semester=1, qca_score=3.5)
+    qca5 = QCA(student_id=student5.id, semester=1, qca_score=3.8)
+    qca6 = QCA(student_id=student6.id, semester=1, qca_score=3.4)
+    qca7 = QCA(student_id=student7.id, semester=1, qca_score=3.9)
+    qca8 = QCA(student_id=student8.id, semester=1, qca_score=3.2)
+    qca9 = QCA(student_id=student9.id, semester=1, qca_score=3.3)
+    qca10 = QCA(student_id=student10.id, semester=1, qca_score=3.7)
+
+    db.session.add_all([qca1, qca2, qca3, qca4, qca5,
+        qca6, qca7, qca8, qca9, qca10])
 
     # companies data
     company1 = Company(name = "Google", num_of_positions = 2)
