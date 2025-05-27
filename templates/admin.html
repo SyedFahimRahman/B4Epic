@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+  <div class="glass-container">
+    <div class="admin-box">
+      <h2>Admin Panel - Pending User Approvals</h2>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flash-messages">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      {% if pending_users %}
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for email, info in pending_users.items() %}
+            <tr>
+              <td>{{ email }}</td>
+              <td>{{ info.role }}</td>
+              <td>
+                <form method="POST" style="display:inline;">
+                  <input type="hidden" name="user_email" value="{{ email }}">
+                  <button type="submit" name="action" value="approve">Approve</button>
+                </form>
+                <form method="POST" style="display:inline;">
+                  <input type="hidden" name="user_email" value="{{ email }}">
+                  <button type="submit" name="action" value="reject">Reject</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No users pending approval.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
