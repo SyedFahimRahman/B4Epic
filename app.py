@@ -17,7 +17,7 @@ app.secret_key = 'supersecretkey'
 
 db.init_app(app)
 
-app.register_blueprint(api_bp)
+app.register_blueprint(api_bp, url_prefix = '/api')
 
 
 
