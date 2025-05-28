@@ -4,7 +4,7 @@ import config
 from allocation import run_allocation
 from models import CompanyAssignment, Student, Company
 
-# In-memory user stores (replace with DB for production)
+# In-memory user stores (demo only; use DB for real app)
 users = {}
 pending_users = {}
 admins = {"admin@admin.com": "admin"}
@@ -16,22 +16,24 @@ app.secret_key = 'supersecretkey'
 
 db.init_app(app)
 
-# ===== Routes =====
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/home")
 def home():
-    # Use consistent session key 'email'
+    # Use 'email' for session key consistently
     if "email" in session:
         return f"Hello {session['email']}, welcome to the home page!"
     return redirect(url_for('login'))
 
+
 @app.route("/about")
 def about():
     return render_template("about.html")
+
 
 @app.route("/log-in", methods=["GET", "POST"])
 def login():
@@ -43,13 +45,13 @@ def login():
             flash("Please enter both email and password.")
             return render_template("login.html")
 
-        # Admin login
+        # Admin login check
         if email in admins and admins[email] == password:
             session["email"] = email
             session["role"] = "admin"
             return redirect(url_for("admin"))
 
-        # User login
+        # User login check
         user = users.get(email)
         if user and user["password"] == password:
             if user["approved"]:
@@ -62,6 +64,7 @@ def login():
             flash("Invalid credentials.")
 
     return render_template("login.html")
+
 
 @app.route("/sign-up", methods=["GET", "POST"])
 def signup():
@@ -78,32 +81,36 @@ def signup():
         elif email in users or email in pending_users:
             flash("Email already registered or pending approval.")
         else:
-            # Add to pending users for admin approval
+            # Add user to pending list for approval
             pending_users[email] = {"password": password, "role": role, "approved": False}
             flash("Account created! Waiting for admin approval.")
             return redirect(url_for("login"))
     return render_template("signup.html")
 
+
 @app.route("/logout")
 def logout():
+    # Remove session keys correctly
     session.pop("email", None)
     session.pop("role", None)
     flash("Logged out successfully.")
     return redirect(url_for("index"))
 
+
 @app.route("/contactus")
 def contactus():
     return render_template("contactus.html")
 
+
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
-    # Protect admin route
+    # Check if user is logged in and is admin
     if "email" not in session or session.get("role") != "admin":
         flash("Admin access only.")
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        action = request.form.get("action")   # 'approve' or 'reject'
+        action = request.form.get("action")  # 'approve' or 'reject'
         user_email = request.form.get("user_email")
 
         if user_email in pending_users:
@@ -118,10 +125,12 @@ def admin():
 
     return render_template("admin.html", pending_users=pending_users)
 
+
 @app.route('/run-allocation')
 def run_allocation_route():
     result = run_allocation(round_number=1)
     return result
+
 
 @app.route('/view-assignments')
 def view_assignments():
