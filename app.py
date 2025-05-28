@@ -3,6 +3,8 @@ from extensions import db
 import config
 from allocation import run_allocation
 from models import CompanyAssignment, Student, Company
+from api import api_bp
+
 users = {}
 pending_users = {}
 admins = {"admin@admin.com": "admin"}
@@ -10,9 +12,14 @@ admins = {"admin@admin.com": "admin"}
 
 app = Flask(__name__)
 app.config.from_object(config)
-db.init_app(app)
 
 app.secret_key = 'supersecretkey'
+
+db.init_app(app)
+
+app.register_blueprint(api_bp)
+
+
 
 @app.route("/")
 def index():
