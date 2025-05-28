@@ -1,5 +1,5 @@
 from extensions import db
-from models import Student, Preference, QCA, CompanyAssignment, RecidencyPosition, Round
+from models import Student, Preference, QCA, CompanyAssignment, ResidencyPosition, Round
 from datetime import datetime
 
 # function for allocation of students based on qca and preferences and company position availability
@@ -30,7 +30,7 @@ def run_allocation(round_number):
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())
 
-#     Go through each students and assigne based on preferences of the students
+#     Go through each students and assign based on preferences of the students
     for student, qca in sorted_students:
         if student.id in assigned_students:
             continue
