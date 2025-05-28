@@ -63,7 +63,7 @@ class Ranking(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     rank_score = db.Column(db.Integer)
 
-class RecidencyPosition(db.Model):
+class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     year = db.Column(db.Integer)
