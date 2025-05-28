@@ -1,30 +1,33 @@
-"""from flask import Flask, redirect, url_for, render_template, session, flash, request
+from flask import Flask, redirect, url_for, render_template, session, flash, request
 from extensions import db
 import config
 from allocation import run_allocation
-from app.models import CompanyAssignment, Student, Company
+from models import CompanyAssignment, Student, Company
+
+# In-memory user stores (replace with DB for production)
 users = {}
 pending_users = {}
 admins = {"admin@admin.com": "admin"}
 
-
 app = Flask(__name__)
 app.config.from_object(config)
-db.init_app(app)
 
 app.secret_key = 'supersecretkey'
+
+db.init_app(app)
+
+# ===== Routes =====
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-
 @app.route("/home")
 def home():
-    if "username" in session:
-        return f"Hello {session['username']}, welcome to the home page!"
+    # Use consistent session key 'email'
+    if "email" in session:
+        return f"Hello {session['email']}, welcome to the home page!"
     return redirect(url_for('login'))
-
 
 @app.route("/about")
 def about():
@@ -52,7 +55,7 @@ def login():
             if user["approved"]:
                 session["email"] = email
                 session["role"] = user["role"]
-                return redirect(url_for("index"))  # redirect to index page
+                return redirect(url_for("index"))
             else:
                 flash("Your account is pending admin approval.")
         else:
@@ -81,22 +84,22 @@ def signup():
             return redirect(url_for("login"))
     return render_template("signup.html")
 
-
 @app.route("/logout")
 def logout():
-    session.pop("username", None)
+    session.pop("email", None)
+    session.pop("role", None)
     flash("Logged out successfully.")
     return redirect(url_for("index"))
-
 
 @app.route("/contactus")
 def contactus():
     return render_template("contactus.html")
 
-
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
-    if "email" not in session or session["email"] not in admins:
+    # Protect admin route
+    if "email" not in session or session.get("role") != "admin":
+        flash("Admin access only.")
         return redirect(url_for("login"))
 
     if request.method == "POST":
@@ -115,15 +118,10 @@ def admin():
 
     return render_template("admin.html", pending_users=pending_users)
 
-
-#  creating route for allocation function of residency assignment
-
 @app.route('/run-allocation')
 def run_allocation_route():
-    result = run_allocation(round_number = 1)
+    result = run_allocation(round_number=1)
     return result
-
-# creating route for company assignments
 
 @app.route('/view-assignments')
 def view_assignments():
@@ -138,6 +136,3 @@ def view_assignments():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-"""
-
