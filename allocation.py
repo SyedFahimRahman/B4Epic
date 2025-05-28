@@ -25,7 +25,7 @@ def run_allocation(round_number):
 
 #     Checking how many residencies are available per company
 
-    positions = RecidencyPosition.query.filter_by(year = datetime.now().year).all()
+    positions = ResidencyPosition.query.filter_by(year = datetime.now().year).all()
     available_slots = {pos.company_id: pos.num_of_residencies for pos in positions}
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())

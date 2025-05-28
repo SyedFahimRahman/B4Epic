@@ -125,14 +125,14 @@ def admin():
 
 #  creating route for allocation function of residency assignment
 
-@app.route('/run-allocation')
+@app.route('/admin/run-allocation')
 def run_allocation_route():
     result = run_allocation(round_number = 1)
     return result
 
 # creating route for company assignments
 
-@app.route('/view-assignments')
+@app.route('/admin/view-assignments')
 def view_assignments():
     assignments = CompanyAssignment.query.all()
     output = []
