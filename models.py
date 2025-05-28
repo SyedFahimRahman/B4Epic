@@ -7,6 +7,7 @@ class User(db.Model):
     password = db.Column(db.String(100))
     role = db.Column(db.String(20))
     created_at = db.Column(db.DateTime)
+    is_approved = db.Column(db.Boolean, default=False)  
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
