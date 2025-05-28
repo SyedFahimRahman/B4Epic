@@ -5,20 +5,37 @@ from allocation import run_allocation
 from models import CompanyAssignment, Student, Company
 from api import api_bp
 
+# Flask-Admin imports
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
 users = {}
 pending_users = {}
 admins = {"admin@admin.com": "admin"}
 
-
 app = Flask(__name__)
 app.config.from_object(config)
-
 app.secret_key = 'supersecretkey'
 
 db.init_app(app)
+app.register_blueprint(api_bp, url_prefix='/api')
 
-app.register_blueprint(api_bp, url_prefix = '/api')
+# Flask-Admin setup
+admin = Admin(app, name='Residency Admin', template_mode='bootstrap3')
 
+# Custom admin view with access control
+class AdminModelView(ModelView):
+    def is_accessible(self):
+        return session.get("email") in admins
+
+    def inaccessible_callback(self, name, **kwargs):
+        flash("You must be an admin to access this page.")
+        return redirect(url_for("login"))
+
+# Register models with Flask-Admin
+admin.add_view(AdminModelView(Student, db.session))
+admin.add_view(AdminModelView(Company, db.session))
+admin.add_view(AdminModelView(CompanyAssignment, db.session))
 
 
 @app.route("/")
@@ -37,6 +54,7 @@ def home():
 def about():
     return render_template("about.html")
 
+
 @app.route("/log-in", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -51,7 +69,7 @@ def login():
         if email in admins and admins[email] == password:
             session["email"] = email
             session["role"] = "admin"
-            return redirect(url_for("admin"))
+            return redirect(url_for("admin_dashboard"))
 
         # User login
         user = users.get(email)
@@ -59,13 +77,14 @@ def login():
             if user["approved"]:
                 session["email"] = email
                 session["role"] = user["role"]
-                return redirect(url_for("index"))  # redirect to index page
+                return redirect(url_for("index"))
             else:
                 flash("Your account is pending admin approval.")
         else:
             flash("Invalid credentials.")
 
     return render_template("login.html")
+
 
 @app.route("/sign-up", methods=["GET", "POST"])
 def signup():
@@ -82,7 +101,6 @@ def signup():
         elif email in users or email in pending_users:
             flash("Email already registered or pending approval.")
         else:
-            # Add to pending users for admin approval
             pending_users[email] = {"password": password, "role": role, "approved": False}
             flash("Account created! Waiting for admin approval.")
             return redirect(url_for("login"))
@@ -91,7 +109,7 @@ def signup():
 
 @app.route("/logout")
 def logout():
-    session.pop("username", None)
+    session.pop("email", None)
     flash("Logged out successfully.")
     return redirect(url_for("index"))
 
@@ -101,13 +119,13 @@ def contactus():
     return render_template("contactus.html")
 
 
-@app.route("/admin", methods=["GET", "POST"])
-def admin():
+@app.route("/admin-dashboard", methods=["GET", "POST"])
+def admin_dashboard():
     if "email" not in session or session["email"] not in admins:
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        action = request.form.get("action")   # 'approve' or 'reject'
+        action = request.form.get("action")
         user_email = request.form.get("user_email")
 
         if user_email in pending_users:
@@ -123,14 +141,11 @@ def admin():
     return render_template("admin.html", pending_users=pending_users)
 
 
-#  creating route for allocation function of residency assignment
-
-@app.route('/run-allocation')
+@app.route('/admin-dashboard/run-allocation')
 def run_allocation_route():
-    result = run_allocation(round_number = 1)
+    result = run_allocation(round_number=1)
     return result
 
-# creating route for company assignments
 
 @app.route('/view-assignments')
 def view_assignments():
@@ -145,5 +160,3 @@ def view_assignments():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
