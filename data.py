@@ -1,12 +1,17 @@
-from app import app
+from app import create_app
 from extensions import db
 from app.models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
 from datetime import datetime
 
-with app.app_context():
+with create_app().app_context():
     db.drop_all()
     db.create_all()
+    
+    admin = User(username="admin@admin.com", password="admin", role="admin", is_approved=True)
+    db.session.add(admin)
+    db.session.commit()
 
+"""
     # creating users
     user1 = User(username = "waleed123", password = "1234", role = "student")
     user2 = User(username = "fahim123", password = "1234", role = "student")
@@ -46,6 +51,7 @@ with app.app_context():
     pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
     pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
     db.session.add_all([pref1, pref2, pref3, pref4])
-
-    db.session.commit()
-    print("Data Inserted.")
+"""
+db.session.commit()
+print("Data Inserted.")
+        

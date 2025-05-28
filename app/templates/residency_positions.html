@@ -1,0 +1,13 @@
+<!-- filepath: c:\Users\sreej\PycharmProjects\B4Epic\app\templates\residency_positions.html -->
+<h2>Available Residency Positions</h2>
+<ul>
+  {% for residency in residencies %}
+    <li>
+      <strong>{{ residency.title }}</strong> - {{ residency.company.name }}<br>
+      {{ residency.description }}<br>
+      <form method="post" action="{{ url_for('student.rank_residency', residency_id=residency.id) }}">
+        <button type="submit">Rank This Residency</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>

@@ -4,9 +4,9 @@ from extensions import db
 
 student_bp = Blueprint('students', __name__)
 
-@student_bp.route('/list', methods=['GET'])
+""""@student_bp.route('/list', methods=['GET'])
 def list():
-    if session.get('logged_in'):
+    if session.get('logged_in'):"""
 
 
 @student_bp.route('/rank-positions', methods=['GET', 'POST'])
@@ -29,3 +29,8 @@ def rank_positions():
         flash("Preferences saved!")
         return redirect(url_for('main.index'))
     return render_template('rank_positions.html', positions=positions)
+
+@student_bp.route("/jobs")
+def list_jobs():
+    jobs = ResidencyPosition.query.all()
+    return render_template("list_jobs.html", jobs=jobs)

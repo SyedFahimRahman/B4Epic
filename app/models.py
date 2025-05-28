@@ -70,6 +70,9 @@ class ResidencyPosition(db.Model):
     year = db.Column(db.Integer)
     num_of_residencies = db.Column(db.Integer)
     is_combined = db.Column(db.Boolean, default=False)
+    title = db.Column(db.String(120), nullable=False)          
+    description = db.Column(db.Text, nullable=False)            
+    requirements = db.Column(db.Text)                           
 
 class CompanyAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,0 +1,27 @@
+<!-- filepath: app/templates/add_job.html -->
+
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<h2>Post a New Residency</h2>
+<form method="post">
+    <label>Title: <input type="text" name="title" required></label><br>
+    <label>Description: <textarea name="description" required></textarea></label><br>
+    <label>Requirements: <textarea name="requirements"></textarea></label><br>
+    <button type="submit">Post Job</button>
+</form>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+{% endblock %}

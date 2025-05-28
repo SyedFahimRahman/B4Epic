@@ -22,10 +22,21 @@ def login():
             session["username"] = email
             return redirect(url_for("admin.admin_panel"))
 
-        # Check for regular user
+        # Check for company user
+        company_user = User.query.filter_by(username=email, role="company").first()
+        if company_user and company_user.password == password:
+            if hasattr(company_user, "is_approved") and not company_user.is_approved:
+                flash("Your account is pending admin approval.")
+                return render_template("login.html")
+            session["email"] = email
+            session["role"] = "company"
+            session["username"] = email
+            session["company_id"] = company_user.id  # <-- This is important!
+            return redirect(url_for("company.add_residency"))
+
+        # Check for regular user (student, etc.)
         user = User.query.filter_by(username=email).first()
         if user and user.password == password:
-            # If you have an is_approved field, check it
             if hasattr(user, "is_approved") and not user.is_approved:
                 flash("Your account is pending admin approval.")
                 return render_template("login.html")
@@ -33,8 +44,8 @@ def login():
             session["role"] = user.role
             session["username"] = email
             return redirect(url_for("public.index"))
-        else:
-            flash("Invalid credentials.")
+
+        flash("Invalid credentials.")
     return render_template("login.html")
 
 @auth_bp.route("/sign-up", methods=["GET", "POST"])
@@ -43,26 +54,20 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
-        role = request.form.get("role")
+        role = request.form.get("role")  # Optional: if your form has a role field
 
-        if not email or not password or not confirm_password or not role:
+        if not email or not password or not confirm_password:
             flash("All fields are required.")
         elif password != confirm_password:
             flash("Passwords do not match.")
         elif User.query.filter_by(username=email).first():
             flash("Email already registered or pending approval.")
         else:
-            # If you have an is_approved field, set it to False for non-admins
-            is_approved = True if role == "admin" else False
-            new_user = User(username=email, password=password, role=role)
-            if hasattr(new_user, "is_approved"):
-                new_user.is_approved = is_approved
+            user_role = role if role else "student"
+            new_user = User(username=email, password=password, role=user_role, is_approved=False)
+            flash("Account created! Waiting for admin approval.")
             db.session.add(new_user)
             db.session.commit()
-            if is_approved:
-                flash("Account created! You can now log in.")
-            else:
-                flash("Account created! Waiting for admin approval.")
             return redirect(url_for("auth.login"))
     return render_template("signup.html")
 
@@ -71,5 +76,6 @@ def logout():
     session.pop("username", None)
     session.pop("email", None)
     session.pop("role", None)
+    session.pop("company_id", None)
     flash("Logged out successfully.")
     return redirect(url_for("public.index"))

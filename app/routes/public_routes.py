@@ -12,4 +12,7 @@ def home():
         return f"Hello {session['username']}, welcome to the home page!"
     return redirect(url_for("auth.login"))
 
+public_bp.route("/residency-positions")
+def residency_positions():
+    return render_template("residency_positions.html")	
 

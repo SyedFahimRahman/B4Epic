@@ -35,6 +35,11 @@
               <a class="nav-link" href="{{ url_for('students.rank_positions') }}" style="font-size: 1.5em;">Rank Residency Positions</a>
             </li>
             {% endif %}
+            {% if session.get('role') == 'company' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('company.add_residency') }}" style="font-size: 1.5em;">Post a Residency</a>
+            </li>
+            {% endif %}
         
           </ul>
           <ul class="navbar-nav ml-auto">

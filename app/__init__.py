@@ -12,6 +12,8 @@ def create_app():
     from app.routes.public_routes import public_bp
     from app.routes.allocations_routes import allocation_bp
     from app.routes.students_routes import student_bp
+    from app.routes.company_routes import company_bp
+
 
 
 
@@ -20,5 +22,6 @@ def create_app():
     app.register_blueprint(public_bp)
     app.register_blueprint(allocation_bp)
     app.register_blueprint(student_bp)
+    app.register_blueprint(company_bp)
 
     return app
