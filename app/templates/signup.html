@@ -1,3 +1,4 @@
+<!-- filepath: c:\Users\sreej\PycharmProjects\B4Epic\app\templates\signup.html -->
 {% extends "base.html" %}
 
 {% block head %}
@@ -29,13 +30,18 @@
 
         <div class="role-selection">
           <label>
-            <input type="radio" name="role" value="student" required>
+            <input type="radio" name="role" value="student" required onclick="toggleCompanyFields()">
             Student
           </label>
           <label>
-            <input type="radio" name="role" value="company" required>
+            <input type="radio" name="role" value="company" required onclick="toggleCompanyFields()">
             Company
           </label>
+        </div>
+
+        <div id="company-fields" style="display: none; margin-top: 10px;">
+          <input type="text" id="company_name" name="company_name" placeholder="Company Name">
+          <input type="number" id="num_of_positions" name="num_of_positions" placeholder="Number of Positions">
         </div>
 
         <button type="submit">Sign-up</button>
@@ -45,4 +51,23 @@
     </div>
   </div>
 </div>
+
+<script>
+function toggleCompanyFields() {
+  var companyRadio = document.querySelector('input[name="role"][value="company"]');
+  var companyFields = document.getElementById('company-fields');
+  if (companyRadio.checked) {
+    companyFields.style.display = 'block';
+  } else {
+    companyFields.style.display = 'none';
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  toggleCompanyFields();
+  var radios = document.querySelectorAll('input[name="role"]');
+  radios.forEach(function(radio) {
+    radio.addEventListener('change', toggleCompanyFields);
+  });
+});
+</script>
 {% endblock %}

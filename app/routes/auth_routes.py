@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from app.models import User
+from app.models import User, Company
 from extensions import db
 
 auth_bp = Blueprint("auth", __name__)
@@ -54,7 +54,10 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
-        role = request.form.get("role")  # Optional: if your form has a role field
+        role = request.form.get("role")
+        company_name = request.form.get("company_name")
+        num_of_positions = request.form.get("num_of_positions")
+        # Optionally, get interview_required and address_id from the form
 
         if not email or not password or not confirm_password:
             flash("All fields are required.")
@@ -63,11 +66,27 @@ def signup():
         elif User.query.filter_by(username=email).first():
             flash("Email already registered or pending approval.")
         else:
-            user_role = role if role else "student"
-            new_user = User(username=email, password=password, role=user_role, is_approved=False)
-            flash("Account created! Waiting for admin approval.")
-            db.session.add(new_user)
-            db.session.commit()
+            if role == "company":
+                # Create the company record
+                company = Company(
+                    name=company_name,
+                    num_of_positions=num_of_positions,
+                    interview_required=False  # or get from form if you want
+                    # address_id=...  # if you collect address info
+                )
+                db.session.add(company)
+                db.session.commit()
+                # Create the user (optionally link to company if you add company_id to User)
+                new_user = User(username=email, password=password, role="company", is_approved=False)
+                db.session.add(new_user)
+                db.session.commit()
+                flash("Company account created! Waiting for admin approval.")
+            else:
+                user_role = role if role else "student"
+                new_user = User(username=email, password=password, role=user_role, is_approved=False)
+                db.session.add(new_user)
+                db.session.commit()
+                flash("Account created! Waiting for admin approval.")
             return redirect(url_for("auth.login"))
     return render_template("signup.html")
 

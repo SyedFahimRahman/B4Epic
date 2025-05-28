@@ -1,9 +1,9 @@
-from app import app
+from app import create_app
 from extensions import db
 from models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
 from datetime import datetime
 
-with app.app_context():
+with create_app().app_context():
     db.drop_all()
     db.create_all()
 
@@ -78,21 +78,32 @@ with app.app_context():
     db.session.commit()
 
     # Residency Positions
-    residency1 = ResidencyPosition(company_id = company1.id, year = datetime.now().year,
-                                   num_of_residencies = 2
-                                   )
-    residency2 = ResidencyPosition(company_id = company2.id, year = datetime.now().year,
-                                   num_of_residencies = 1
-                                   )
-    db.session.add_all([residency1, residency2])
+residency1 = ResidencyPosition(
+    company_id=company1.id,
+    year=datetime.now().year,
+    num_of_residencies=2,
+    title="Software Engineering Residency",
+    description="Work on exciting projects at Google.",
+    requirements="Python, C++, teamwork"
+)
+residency2 = ResidencyPosition(
+    company_id=company2.id,
+    year=datetime.now().year,
+    num_of_residencies=1,
+    title="Hardware Residency",
+    description="Join Analog Devices for hands-on hardware experience.",
+    requirements="Electronics, PCB design"
+)
+
+db.session.add_all([residency1, residency2])
 
 
-    # preferences data
-    pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
-    pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
-    pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
-    pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
-    db.session.add_all([pref1, pref2, pref3, pref4])
+# preferences data
+pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
+pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
+pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
+pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
+db.session.add_all([pref1, pref2, pref3, pref4])
 
-    db.session.commit()
-    print("Data Inserted.")
+db.session.commit()
+print("Data Inserted.")
