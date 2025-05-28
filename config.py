@@ -1,2 +1,2 @@
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:3231@localhost/residency_system'
+SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:sreejita@localhost/mydb'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
