@@ -1,7 +1,8 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
+from models import User, Student, QCA, Company, ResidencyPosition, Preference
 from datetime import datetime
+import random
 
 with app.app_context():
     db.drop_all()
@@ -101,12 +102,29 @@ with app.app_context():
     db.session.add_all([residency1, residency2])
 
 
-    # preferences data
-    pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
-    pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
-    pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
-    pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
-    db.session.add_all([pref1, pref2, pref3, pref4])
+   # preferences data
+   # pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
+   # pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
+   # pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
+   # pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
+   # db.session.add_all([pref1, pref2, pref3, pref4])
 
-    db.session.commit()
-    print("Data Inserted.")
+#initial preference ranking
+    all_students = [student1, student2, student3, student4, student5,
+                    student6, student7, student8, student9, student10]
+    all_companies = [company1, company2, company3, company4, company5, company6, company7, company8, company9, company10,
+                     company11, company12, company13, company14, company15, company16, company17, company18, company19, company20]
+
+for student in all_students:
+    shuffled_companies = all_companies[:]
+    random.shuffle(shuffled_companies)
+    for rank, company in enumerate(shuffled_companies, start=1):
+        preference = Preference(
+            student_id = student.id,
+            company_id = company.id,
+            preference_rank = rank
+        )
+        db.session.add(preference)
+
+db.session.commit()
+print("Data Inserted.")
