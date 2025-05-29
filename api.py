@@ -41,7 +41,7 @@ def submit_preferences():
         return jsonify({"error: 'Student not found'})" }), 404
 
     #clear existing preferences for the student
-    Preference.qu.filter_by(student_id= student_id).delete()
+    Preference.query.filter_by(student_id= student_id).delete()
 
     #insert new preferences:
     for pref in preferences:
@@ -51,8 +51,8 @@ def submit_preferences():
         if company_id is None or rank is None:
             continue        #skips invalid entry
 
-            new_pref = Preference(student_id=student_id, company_id=company_id, preference_rank=rank)
-            db.session.add(new_pref)
+        new_pref = Preference(student_id=student_id, company_id=company_id, preference_rank=rank)
+        db.session.add(new_pref)
 
         db.session.commit()
         return jsonify({'message': 'Preferences submitted successfully'})
