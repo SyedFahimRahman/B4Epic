@@ -48,7 +48,7 @@ def login():
                 session["role"] = "admin"
                 return redirect(url_for("admin_panel"))
             elif user.role == "company":
-                if not user.is_approved:
+                if not user.is_approved and user.role != "admin":
                     flash("Your account is pending admin approval.")
                     return render_template("login.html")
                 session["email"] = email
@@ -99,7 +99,10 @@ def signup():
 
             db.session.add(new_user)
             db.session.commit()
-            flash(f"{role.capitalize()} account created! Waiting for admin approval.")
+            if role == "admin":
+                flash(f"{role.capitalize()} account created! You can log in now.")
+            else:
+                flash(f"{role.capitalize()} account created! Waiting for admin approval.")
             return redirect(url_for("login"))
 
     return render_template("signup.html", show_admin_option=is_first_user)
