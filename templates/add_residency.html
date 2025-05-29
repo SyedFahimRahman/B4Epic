@@ -38,6 +38,38 @@
     <textarea name="requirements" placeholder="List requirements here"></textarea>
   </label><br>
 
+  <h3>Company Details</h3>
+
+  <label>Company Contact:
+    <input type="text" name="contact" placeholder="Enter company contact" required
+      value="{{ company.contact if company else '' }}">
+  </label><br>
+
+  <label>Address Line 1:
+    <input type="text" name="line_1" placeholder="Enter street address" required
+      value="{{ address.line_1 if address else '' }}">
+  </label><br>
+
+  <label>Address Line 2:
+    <input type="text" name="line_2" placeholder="Enter address line 2"
+      value="{{ address.line_2 if address else '' }}">
+  </label><br>
+
+  <label>Town:
+    <input type="text" name="town" placeholder="Enter town/city" required
+      value="{{ address.town if address else '' }}">
+  </label><br>
+
+  <label>County:
+    <input type="text" name="county" placeholder="Enter county" required
+      value="{{ address.county if address else '' }}">
+  </label><br>
+
+  <label>Eircode:
+    <input type="text" name="eircode" placeholder="Enter Eircode" required
+      value="{{ address.eircode if address else '' }}">
+  </label><br>
+
   <button type="submit">Post Residency</button>
 </form>
 

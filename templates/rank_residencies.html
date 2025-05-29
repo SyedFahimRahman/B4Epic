@@ -20,7 +20,7 @@
         <ul id="positionsList">
             {% for pos in positions %}
             <li data-id="{{ pos.id }}">
-                Company: {{ pos.company_id }}, Year: {{ pos.year }}, Slots: {{ pos.num_of_residencies }}
+                Company: {{ pos.company_id }}, Job Title: {{ pos.title }}, Slots: {{ pos.num_of_residencies }}
             </li>
             {% endfor %}
         </ul>

@@ -7,14 +7,25 @@
     <ul>
         {% for res in residencies %}
             <li>
-                <h3>{{ res.title }} ({{ res.residency_type if res.residency_type else 'Year N/A' }})</h3>
-                <p><strong>Company:</strong> {{ res.company_name }}</p>  <!-- Show company name here -->
-                <p><strong>Residency Type/ID:</strong> {{ res.residency_type }}</p>
+                <h2 style="font-size: 2em; font-weight: bold;">{{ res.company_name }}</h2>
+                <h4>{{ res.title }}</h4>
+
+                <p><strong>Residency Type:</strong> {{ res.residency_type }}</p>
                 <p><strong>Description:</strong> {{ res.description }}</p>
                 <p><strong>Number of Positions:</strong> {{ res.num_of_residencies }}</p>
                 {% if res.is_combined %}
                     <p><em>This is a combined residency position.</em></p>
                 {% endif %}
+
+                <h4>Company Contact Details</h4>
+                <p><strong>Contact:</strong> {{ res.contact }}</p>
+
+                <h4>Company Address</h4>
+                <p>
+                    {{ res.address_line_1 }}{% if res.address_line_2 %}, {{ res.address_line_2 }}{% endif %}<br>
+                    {{ res.town }}, {{ res.county }}<br>
+                    {{ res.eircode }}
+                </p>
             </li>
         {% else %}
             <li>No residency positions available yet.</li>
