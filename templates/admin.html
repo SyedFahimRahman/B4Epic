@@ -32,21 +32,20 @@
           <tbody>
             {% for user in pending_users %}
 <tr>
-  <td>{{ user.email }}</td>
+  <td>{{ user.username }}</td>  {# Use username, not email #}
   <td>{{ user.role }}</td>
   <td>
-    <form method="POST" style="display:inline;">
-      <input type="hidden" name="user_email" value="{{ user.email }}">
+    <form method="POST" style="display:inline; margin-right: 10px;">
+      <input type="hidden" name="user_email" value="{{ user.username }}">
       <button type="submit" name="action" value="approve">Approve</button>
     </form>
     <form method="POST" style="display:inline;">
-      <input type="hidden" name="user_email" value="{{ user.email }}">
+      <input type="hidden" name="user_email" value="{{ user.username }}">
       <button type="submit" name="action" value="reject">Reject</button>
     </form>
   </td>
 </tr>
 {% endfor %}
-
           </tbody>
         </table>
       {% else %}
