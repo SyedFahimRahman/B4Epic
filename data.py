@@ -7,7 +7,7 @@ with app.app_context():
     db.drop_all()
     db.create_all()
     
-    admin = User(
+    """admin = User(
     username="admin@admin.com",
     password="admin",  # Use a hashed password in production!
     role="admin",
@@ -15,6 +15,7 @@ with app.app_context():
     )
     db.session.add(admin)
     db.session.commit()
+    """
 
     # creating users
     user1 = User(username = "waleed.ahmad", password = "w1234", role = "student")
@@ -32,7 +33,7 @@ with app.app_context():
     user13 = User(username="company1", password="c1234", role="company")
     user14 = User(username="company2", password="c1234", role="company")
     
-    db.session.add_all([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10])
+    db.session.add_all([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14])
     db.session.flush() #to get IDs
 
     # creating students
