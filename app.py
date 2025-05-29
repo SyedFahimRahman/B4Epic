@@ -4,6 +4,8 @@ import config
 from allocation import run_allocation
 from models import CompanyAssignment, Student, Company, ResidencyPosition, User
 
+from api import api_bp
+
 # Blueprints (optional modular organization)
 from flask import Blueprint
 
@@ -12,6 +14,8 @@ app = Flask(__name__)
 app.config.from_object(config)
 app.secret_key = 'supersecretkey'
 db.init_app(app)
+
+app.register_blueprint(api_bp, url_prefix='/api')
 
 # ----------------- Public Routes -----------------
 @app.route("/")
@@ -64,6 +68,8 @@ def login():
 
 @app.route("/sign-up", methods=["GET", "POST"])
 def signup():
+    is_first_user = User.query.count() == 0
+
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -79,21 +85,24 @@ def signup():
         elif User.query.filter_by(username=email).first():
             flash("Email already registered or pending approval.")
         else:
+            # Automatically assign 'admin' to the first user
+            if is_first_user:
+                role = "admin"
+
             if role == "company":
                 company = Company(name=company_name, num_of_positions=num_of_positions)
                 db.session.add(company)
                 db.session.commit()
                 new_user = User(username=email, password=password, role="company", is_approved=False)
-                db.session.add(new_user)
-                db.session.commit()
-                flash("Company account created! Waiting for admin approval.")
             else:
                 new_user = User(username=email, password=password, role=role, is_approved=False)
-                db.session.add(new_user)
-                db.session.commit()
-                flash("Account created! Waiting for admin approval.")
+
+            db.session.add(new_user)
+            db.session.commit()
+            flash(f"{role.capitalize()} account created! Waiting for admin approval.")
             return redirect(url_for("login"))
-    return render_template("signup.html")
+
+    return render_template("signup.html", show_admin_option=is_first_user)
 
 @app.route("/logout")
 def logout():
@@ -150,7 +159,7 @@ def view_assignments():
     return "<br>".join(output)
 
 @app.route("/company/add-residency", methods=["GET", "POST"])
-def company_add_residency():
+def add_residency():
     # Check if user is logged in and is an approved company
     if session.get("role") != "company":
         flash("Company access only.")

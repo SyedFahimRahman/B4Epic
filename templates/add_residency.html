@@ -1,4 +1,4 @@
-<!-- filepath: app/templates/add_job.html -->
+<!-- filepath: app/templates/add_residency.html -->
 
 {% extends "base.html" %}
 
@@ -13,7 +13,7 @@
     <label>Title: <input type="text" name="title" required></label><br>
     <label>Description: <textarea name="description" required></textarea></label><br>
     <label>Requirements: <textarea name="requirements"></textarea></label><br>
-    <button type="submit">Post Job</button>
+    <button type="submit">Post Residency</button>
 </form>
 {% with messages = get_flashed_messages() %}
   {% if messages %}

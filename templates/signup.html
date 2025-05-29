@@ -29,15 +29,22 @@
         <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm Password">
 
         <div class="role-selection">
-          <label>
-            <input type="radio" name="role" value="student" required onclick="toggleCompanyFields()">
-            Student
-          </label>
-          <label>
-            <input type="radio" name="role" value="company" required onclick="toggleCompanyFields()">
-            Company
-          </label>
-        </div>
+  <label>
+    <input type="radio" name="role" value="student" required onclick="toggleCompanyFields()">
+    Student
+  </label>
+  <label>
+    <input type="radio" name="role" value="company" required onclick="toggleCompanyFields()">
+    Company
+  </label>
+  {% if show_admin_option %}
+  <label>
+    <input type="radio" name="role" value="admin" required onclick="toggleCompanyFields()">
+    Admin
+  </label>
+  {% endif %}
+</div>
+
 
         <div id="company-fields" style="display: none; margin-top: 10px;">
           <input type="text" id="company_name" name="company_name" placeholder="Company Name">
@@ -54,14 +61,11 @@
 
 <script>
 function toggleCompanyFields() {
-  var companyRadio = document.querySelector('input[name="role"][value="company"]');
-  var companyFields = document.getElementById('company-fields');
-  if (companyRadio.checked) {
-    companyFields.style.display = 'block';
-  } else {
-    companyFields.style.display = 'none';
-  }
+  const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+  const companyFields = document.getElementById('company-fields');
+  companyFields.style.display = selectedRole === 'company' ? 'block' : 'none';
 }
+
 document.addEventListener('DOMContentLoaded', function() {
   toggleCompanyFields();
   var radios = document.querySelectorAll('input[name="role"]');

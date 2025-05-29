@@ -30,22 +30,23 @@
             </tr>
           </thead>
           <tbody>
-            {% for email, info in pending_users.items() %}
-            <tr>
-              <td>{{ email }}</td>
-              <td>{{ info.role }}</td>
-              <td>
-                <form method="POST" style="display:inline;">
-                  <input type="hidden" name="user_email" value="{{ email }}">
-                  <button type="submit" name="action" value="approve">Approve</button>
-                </form>
-                <form method="POST" style="display:inline;">
-                  <input type="hidden" name="user_email" value="{{ email }}">
-                  <button type="submit" name="action" value="reject">Reject</button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
+            {% for user in pending_users %}
+<tr>
+  <td>{{ user.email }}</td>
+  <td>{{ user.role }}</td>
+  <td>
+    <form method="POST" style="display:inline;">
+      <input type="hidden" name="user_email" value="{{ user.email }}">
+      <button type="submit" name="action" value="approve">Approve</button>
+    </form>
+    <form method="POST" style="display:inline;">
+      <input type="hidden" name="user_email" value="{{ user.email }}">
+      <button type="submit" name="action" value="reject">Reject</button>
+    </form>
+  </td>
+</tr>
+{% endfor %}
+
           </tbody>
         </table>
       {% else %}
