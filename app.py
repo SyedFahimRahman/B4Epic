@@ -4,6 +4,8 @@ import config
 from allocation import run_allocation
 from models import CompanyAssignment, Student, Company, ResidencyPosition, User
 
+from api import api_bp
+
 # Blueprints (optional modular organization)
 from flask import Blueprint
 
@@ -12,6 +14,8 @@ app = Flask(__name__)
 app.config.from_object(config)
 app.secret_key = 'supersecretkey'
 db.init_app(app)
+
+app.register_blueprint(api_bp, url_prefix='/api')
 
 # ----------------- Public Routes -----------------
 @app.route("/")

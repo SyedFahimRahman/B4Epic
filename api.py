@@ -1,7 +1,5 @@
-from flask import Blueprint, jsonify
-from models import Company, ResidencyPosition
-from flask import request, jsonify
-from models import Preference, Student
+from flask import Blueprint, jsonify, request
+from models import Company, ResidencyPosition, Preference, Student
 from extensions import db
 
 api_bp = Blueprint('api' , __name__)        #creates a group of api routes & this blueprint will be registered later in app.py
@@ -26,7 +24,7 @@ def get_residency_positions():
 
     ])
 
-@api_bp.route('/preferences', methods=['GET'])
+@api_bp.route('/preferences', methods=['POST'])
 def submit_preferences():
     data = request.get_json()
     student_id = data.get('student_id')
@@ -38,7 +36,7 @@ def submit_preferences():
     #validate student exits
     student = Student.query.get(student_id)
     if not student:
-        return jsonify({"error: 'Student not found'})" }), 404
+        return jsonify({"error": "Student not found"}), 404
 
     #clear existing preferences for the student
     Preference.query.filter_by(student_id= student_id).delete()
@@ -54,7 +52,7 @@ def submit_preferences():
         new_pref = Preference(student_id=student_id, company_id=company_id, preference_rank=rank)
         db.session.add(new_pref)
 
-        db.session.commit()
-        return jsonify({'message': 'Preferences submitted successfully'})
+    db.session.commit()
+    return jsonify({'message': 'Preferences submitted successfully'})
 
 
