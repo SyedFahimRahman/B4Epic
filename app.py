@@ -1,4 +1,5 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
+from functools import wraps
 
 from allocation import run_allocation
 
@@ -22,6 +23,15 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 app.register_blueprint(api_bp, url_prefix='/api')
+
+def student_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('role') != 'student':
+            flash("You must be logged in as a student to see this page.")
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ----------------- Public Routes -----------------
 @app.route("/")
@@ -94,7 +104,7 @@ def signup():
             if is_first_user:
                 role = "admin"
 
-            new_user = None  # <- define it outside conditionals to avoid UnboundLocalError
+            new_user = None  # define it outside conditionals to avoid UnboundLocalError
 
             if role == "company":
                 company = Company(name=company_name)
@@ -108,6 +118,8 @@ def signup():
                     is_approved=False,
                     company_id=company.id
                 )
+                db.session.add(new_user)
+                db.session.commit()
             else:
                 new_user = User(
                     username=email,
@@ -115,13 +127,26 @@ def signup():
                     role=role,
                     is_approved=False
                 )
+                db.session.add(new_user)
+                db.session.commit()
 
-            db.session.add(new_user)
-            db.session.commit()
+                # If the user is a student, create the Student entry too:
+                if role == "student":
+                    new_student = Student(
+                        id=new_user.id,  # IMPORTANT: Student.id is FK to User.id
+                        first_name="",    # You can update this later with real data
+                        last_name="",
+                        phone_no="",
+                        address_id=None
+                    )
+                    db.session.add(new_student)
+                    db.session.commit()
+
             flash(f"{role.capitalize()} account created! Waiting for admin approval.")
             return redirect(url_for("login"))
 
     return render_template("signup.html", show_admin_option=is_first_user)
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -194,22 +219,138 @@ def add_residency():
         return redirect(url_for("index"))
 
     if request.method == "POST":
+        # Residency position fields
         title = request.form.get("title")
         description = request.form.get("description")
         num_of_residencies = request.form.get("num_of_residencies")
+        residency_type = request.form.get("residency_type")  # dropdown value
+        is_combined_str = request.form.get("is_combined")  # "true" or "false"
 
+        is_combined = True if is_combined_str == "true" else False
+
+        # Address fields from form
+        line_1 = request.form.get("line_1")
+        line_2 = request.form.get("line_2")
+        town = request.form.get("town")
+        county = request.form.get("county")
+        eircode = request.form.get("eircode")
+
+        # Update or create company address
+        if company.address_id:
+            # Existing address - update it
+            address = Address.query.get(company.address_id)
+            address.line_1 = line_1
+            address.line_2 = line_2
+            address.town = town
+            address.county = county
+            address.eircode = eircode
+        else:
+            # No address yet - create one
+            address = Address(
+                line_1=line_1,
+                line_2=line_2,
+                town=town,
+                county=county,
+                eircode=eircode
+            )
+            db.session.add(address)
+            db.session.flush()  # flush to get the address id before commit
+            company.address_id = address.id
+
+        # Add the new residency position
         new_position = ResidencyPosition(
             title=title,
             description=description,
             num_of_residencies=num_of_residencies,
-            company_id=company.id  # ✅ LINK IT PROPERLY
+            residency=residency_type,
+            is_combined=is_combined,
+            company_id=company.id
         )
+
         db.session.add(new_position)
         db.session.commit()
-        flash("Residency position added!")
+
+        flash("Residency position and company address updated!")
         return redirect(url_for("add_residency"))
 
-    return render_template("add_residency.html", company_name=company.name)
+    # For GET request, pass current address data to template for pre-filling
+    address = None
+    if company.address_id:
+        address = Address.query.get(company.address_id)
+
+    return render_template(
+        "add_residency.html",
+        company_name=company.name,
+        address=address
+    )
+
+@app.route("/residencies")
+def list_residencies():
+    # Query all ResidencyPositions with their related Company and Address data
+    positions = db.session.query(
+        ResidencyPosition,
+        Company,
+        Address
+    ).join(Company, ResidencyPosition.company_id == Company.id
+    ).join(Address, Company.address_id == Address.id
+    ).all()
+
+    # Prepare a list of dicts to send to template
+    residencies_data = []
+    for position, company, address in positions:
+        residencies_data.append({
+            "title": position.title,
+            "description": position.description,
+            "num_of_residencies": position.num_of_residencies,
+            "residency_type": position.residency,
+            "is_combined": position.is_combined,
+            "company_name": company.name,
+            "contact": company.contact,
+            "address_line_1": address.line_1,
+            "address_line_2": address.line_2,
+            "town": address.town,
+            "county": address.county,
+            "eircode": address.eircode,
+        })
+
+    return render_template("residency_list.html", residencies=residencies_data)
+
+@app.route('/student/rank_residencies', methods=['GET', 'POST'])
+@student_required
+def rank_residencies():
+    if session.get('role') != 'student':
+        flash("You must be logged in as a student.")
+        return redirect(url_for('login'))
+
+    student_id = session.get('student_id')
+    positions = ResidencyPosition.query.all()  # Or filter as needed
+
+    if request.method == 'POST':
+        position_order_str = request.form.get('position_order', '')
+        if not position_order_str:
+            flash("Please rank the positions before submitting.")
+            return redirect(url_for('rank_residencies'))
+
+        position_ids = position_order_str.split(',')
+
+        # Delete old rankings
+        Ranking.query.filter_by(student_id=student_id).delete()
+
+        # Add new rankings
+        for rank, pos_id in enumerate(position_ids, start=1):
+            ranking = Ranking(student_id=student_id, residency_id=int(pos_id), rank_score=rank)
+            db.session.add(ranking)
+
+        db.session.commit()
+        flash("Your rankings have been saved!")
+        return redirect(url_for('rank_residencies'))
+
+    return render_template('rank_residencies.html', positions=positions)
+
+from functools import wraps
+from flask import session, redirect, url_for, flash
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

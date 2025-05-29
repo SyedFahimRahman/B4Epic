@@ -6,8 +6,9 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     role = db.Column(db.String(20))
-    created_at = db.Column(db.DateTime)
     is_approved = db.Column(db.Boolean, default=False)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
+    company = db.relationship('Company', backref='users')
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +24,8 @@ class Student(db.Model):
     last_name = db.Column(db.String(100))
     phone_no = db.Column(db.String(20))
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
+    address = db.relationship('Address', backref='students', lazy=True)
+    grade = db.Column(db.Integer)
 
 class QCA(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,9 +42,8 @@ class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
-    num_of_positions = db.Column(db.Integer)
-    interview_required = db.Column(db.Boolean)
-    
+    contact = db.Column(db.String(100))
+    address = db.relationship('Address', backref='companies', lazy=True)
 
 class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -62,17 +64,18 @@ class Interview(db.Model):
 class Ranking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
-    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
+    residency_id = db.Column(db.Integer, db.ForeignKey('residency_position.id'))
     rank_score = db.Column(db.Integer)
 
 class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
-    year = db.Column(db.Integer)
+    residency = db.Column(db.Text)
     num_of_residencies = db.Column(db.Integer)
     title = db.Column(db.String(100))  # <-- Add this line
     description = db.Column(db.Text)
     is_combined = db.Column(db.Boolean, default=False)
+    company = db.relationship('Company', backref='residency_positions')
 
 class CompanyAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
