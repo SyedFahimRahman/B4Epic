@@ -48,7 +48,7 @@ def login():
                 session["role"] = "admin"
                 return redirect(url_for("admin_panel"))
             elif user.role == "company":
-                if not user.is_approved and user.role != "admin":
+                if not user.is_approved:
                     flash("Your account is pending admin approval.")
                     return render_template("login.html")
                 session["email"] = email
@@ -99,10 +99,7 @@ def signup():
 
             db.session.add(new_user)
             db.session.commit()
-            if role == "admin":
-                flash(f"{role.capitalize()} account created! You can log in now.")
-            else:
-                flash(f"{role.capitalize()} account created! Waiting for admin approval.")
+            flash(f"{role.capitalize()} account created! Waiting for admin approval.")
             return redirect(url_for("login"))
 
     return render_template("signup.html", show_admin_option=is_first_user)
@@ -172,11 +169,6 @@ def add_residency():
         flash("Your account is pending admin approval.")
         return redirect(url_for("index"))
 
-    # Get the company object (assuming one company per user)
-    company = Company.query.filter_by(id=user.id).first()
-    if not company:
-        flash("No company profile found.")
-        return redirect(url_for("index"))
 
     if request.method == "POST":
         title = request.form.get("title")
@@ -185,7 +177,6 @@ def add_residency():
         # Add more fields as needed
 
         new_position = ResidencyPosition(
-            company_id=company.id,
             title=title,
             description=description,
             num_of_residencies=num_of_residencies
@@ -193,7 +184,7 @@ def add_residency():
         db.session.add(new_position)
         db.session.commit()
         flash("Residency position added!")
-        return redirect(url_for("add_residency"))
+        return redirect(url_for("add-residency"))
 
     return render_template("add_residency.html")
 
