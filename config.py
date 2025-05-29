@@ -1,2 +1,9 @@
-SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:3231@localhost/residency_system'
-SQLALCHEMY_TRACK_MODIFICATIONS = False
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
