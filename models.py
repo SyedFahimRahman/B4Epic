@@ -8,6 +8,8 @@ class User(db.Model):
     role = db.Column(db.String(20))
     created_at = db.Column(db.DateTime)
     is_approved = db.Column(db.Boolean, default=False)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
+    company = db.relationship('Company', backref='users')
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,11 +70,12 @@ class Ranking(db.Model):
 class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
-    year = db.Column(db.Integer)
+    residency = db.Column(db.Text)
     num_of_residencies = db.Column(db.Integer)
     title = db.Column(db.String(100))  # <-- Add this line
     description = db.Column(db.Text)
     is_combined = db.Column(db.Boolean, default=False)
+    company = db.relationship('Company', backref='residency_positions')
 
 class CompanyAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

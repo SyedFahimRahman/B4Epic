@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}All Residency Positions{% endblock %}
+
+{% block content %}
+    <h1>All Residency Positions</h1>
+    <ul>
+        {% for res in residencies %}
+            <li>
+                <h3>{{ res.title }} ({{ res.residency_type if res.residency_type else 'Year N/A' }})</h3>
+                <p><strong>Company:</strong> {{ res.company_name }}</p>  <!-- Show company name here -->
+                <p><strong>Residency Type/ID:</strong> {{ res.residency_type }}</p>
+                <p><strong>Description:</strong> {{ res.description }}</p>
+                <p><strong>Number of Positions:</strong> {{ res.num_of_residencies }}</p>
+                {% if res.is_combined %}
+                    <p><em>This is a combined residency position.</em></p>
+                {% endif %}
+            </li>
+        {% else %}
+            <li>No residency positions available yet.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

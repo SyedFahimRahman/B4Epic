@@ -197,12 +197,19 @@ def add_residency():
         title = request.form.get("title")
         description = request.form.get("description")
         num_of_residencies = request.form.get("num_of_residencies")
+        residency_type = request.form.get("residency_type")  # new dropdown value
+        is_combined_str = request.form.get("is_combined")  # expects "true" or "false" string
+
+        # Convert is_combined to boolean
+        is_combined = True if is_combined_str == "true" else False
 
         new_position = ResidencyPosition(
             title=title,
             description=description,
             num_of_residencies=num_of_residencies,
-            company_id=company.id  # ✅ LINK IT PROPERLY
+            residency=residency_type,  # storing the dropdown choice
+            is_combined=is_combined,
+            company_id=company.id
         )
         db.session.add(new_position)
         db.session.commit()
@@ -210,6 +217,21 @@ def add_residency():
         return redirect(url_for("add_residency"))
 
     return render_template("add_residency.html", company_name=company.name)
+@app.route("/residencies")
+def list_residencies():
+    residencies = ResidencyPosition.query.all()
+    residency_info = []
+    for r in residencies:
+        company = Company.query.get(r.company_id)
+        residency_info.append({
+            "title": r.title,
+            "description": r.description,
+            "num_of_residencies": r.num_of_residencies,
+            "residency_type": r.residency,
+            "is_combined": r.is_combined,
+            "company_name": company.name if company else "Unknown Company"
+        })
+    return render_template("residency_list.html", residencies=residency_info)
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,19 +1,46 @@
-<!-- filepath: app/templates/add_residency.html -->
-
 {% extends "base.html" %}
-
 
 {% block content %}
 <h2>Post a New Residency</h2>
-    <form method="post">
-    <label>Title: <input type="text" name="title" required></label><br>
-    <label>Description: <textarea name="description" required></textarea></label><br>
-    <label>Number of Residencies: <input type="number" name="num_of_residencies" required></label><br>
-    <label>Requirements: <textarea name="requirements"></textarea></label><br>
-    <button type="submit">Post Residency</button>
+<form method="post">
+  <label>Title:
+    <input type="text" name="title" placeholder="Enter residency title" required>
+  </label><br>
+
+  <label>Description:
+    <textarea name="description" placeholder="Enter detailed description" required></textarea>
+  </label><br>
+
+  <label>Number of Residencies:
+    <input type="number" name="num_of_residencies" min="1" placeholder="e.g. 5" required>
+  </label><br>
+
+  <label>Residency Type:
+    <select name="residency_type" required>
+      <option value="" disabled selected>Select type</option>
+      <option value="Type1">Type 1</option>
+      <option value="Type2">Type 2</option>
+      <option value="Type3">Type 3</option>
+      <option value="Type4">Type 4</option>
+      <option value="Type5">Type 5</option>
+    </select>
+  </label><br>
+
+  <label>Is Combined Residency?
+    <select name="is_combined" required>
+      <option value="" disabled selected>Select an option</option>
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </select>
+  </label><br>
+
+  <label>Requirements:
+    <textarea name="requirements" placeholder="List requirements here"></textarea>
+  </label><br>
+
+  <button type="submit">Post Residency</button>
 </form>
->
-</form>
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul>
