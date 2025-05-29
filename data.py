@@ -47,7 +47,6 @@ with app.app_context():
     qca9 = QCA(student_id=student9.id, semester=1, qca_score=3.0)
     qca10 = QCA(student_id=student10.id, semester=1, qca_score=2.9)
 
-
     db.session.add_all([qca1, qca2, qca3, qca4, qca5,
         qca6, qca7, qca8, qca9, qca10])
 
@@ -65,7 +64,6 @@ with app.app_context():
     company11 = Company(name="Intercom", num_of_positions= 2)
     company12 = Company(name="DevEire", num_of_positions= 1)
     company13 = Company(name="Johnson&johnson", num_of_positions= 2)
-
     company14 = Company(name="Dogpatch", num_of_positions=1)
     company15 = Company(name="Kirby", num_of_positions= 1)
     company16 = Company(name="Patch", num_of_positions= 1)
