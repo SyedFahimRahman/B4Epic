@@ -1,8 +1,10 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
-from extensions import db
-import config
+
 from allocation import run_allocation
-from models import CompanyAssignment, Student, Company, ResidencyPosition, User
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from config import Config
 
 from api import api_bp
 
@@ -11,9 +13,13 @@ from flask import Blueprint
 
 # Initialize app
 app = Flask(__name__)
-app.config.from_object(config)
+app.config.from_object(Config)
+db = SQLAlchemy()
+from models import *
+
 app.secret_key = 'supersecretkey'
 db.init_app(app)
+migrate = Migrate(app, db)
 
 app.register_blueprint(api_bp, url_prefix='/api')
 
