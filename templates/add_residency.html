@@ -2,18 +2,17 @@
 
 {% extends "base.html" %}
 
-{% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
-{% endblock %}
-
 
 {% block content %}
 <h2>Post a New Residency</h2>
-<form method="post">
+    <form method="post">
     <label>Title: <input type="text" name="title" required></label><br>
     <label>Description: <textarea name="description" required></textarea></label><br>
+    <label>Number of Residencies: <input type="number" name="num_of_residencies" required></label><br>
     <label>Requirements: <textarea name="requirements"></textarea></label><br>
     <button type="submit">Post Residency</button>
+</form>
+>
 </form>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
