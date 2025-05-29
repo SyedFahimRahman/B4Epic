@@ -175,11 +175,6 @@ def add_residency():
         flash("Your account is pending admin approval.")
         return redirect(url_for("index"))
 
-    # Get the company object (assuming one company per user)
-    company = Company.query.filter_by(id=user.id).first()
-    if not company:
-        flash("No company profile found.")
-        return redirect(url_for("index"))
 
     if request.method == "POST":
         title = request.form.get("title")
@@ -188,7 +183,6 @@ def add_residency():
         # Add more fields as needed
 
         new_position = ResidencyPosition(
-            company_id=company.id,
             title=title,
             description=description,
             num_of_residencies=num_of_residencies
@@ -196,7 +190,7 @@ def add_residency():
         db.session.add(new_position)
         db.session.commit()
         flash("Residency position added!")
-        return redirect(url_for("add_residency"))
+        return redirect(url_for("add-residency"))
 
     return render_template("add_residency.html")
 
