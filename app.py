@@ -48,7 +48,7 @@ def login():
                 session["role"] = "admin"
                 return redirect(url_for("admin_panel"))
             elif user.role == "company":
-                if not user.is_approved:
+                if not user.is_approved and user.role != "admin":
                     flash("Your account is pending admin approval.")
                     return render_template("login.html")
                 session["email"] = email
@@ -68,6 +68,8 @@ def login():
 
 @app.route("/sign-up", methods=["GET", "POST"])
 def signup():
+    is_first_user = User.query.count() == 0
+
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -83,21 +85,27 @@ def signup():
         elif User.query.filter_by(username=email).first():
             flash("Email already registered or pending approval.")
         else:
+            # Automatically assign 'admin' to the first user
+            if is_first_user:
+                role = "admin"
+
             if role == "company":
                 company = Company(name=company_name, num_of_positions=num_of_positions)
                 db.session.add(company)
                 db.session.commit()
                 new_user = User(username=email, password=password, role="company", is_approved=False)
-                db.session.add(new_user)
-                db.session.commit()
-                flash("Company account created! Waiting for admin approval.")
             else:
                 new_user = User(username=email, password=password, role=role, is_approved=False)
-                db.session.add(new_user)
-                db.session.commit()
-                flash("Account created! Waiting for admin approval.")
+
+            db.session.add(new_user)
+            db.session.commit()
+            if role == "admin":
+                flash(f"{role.capitalize()} account created! You can log in now.")
+            else:
+                flash(f"{role.capitalize()} account created! Waiting for admin approval.")
             return redirect(url_for("login"))
-    return render_template("signup.html")
+
+    return render_template("signup.html", show_admin_option=is_first_user)
 
 @app.route("/logout")
 def logout():
