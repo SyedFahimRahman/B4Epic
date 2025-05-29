@@ -82,7 +82,6 @@ def signup():
         confirm_password = request.form.get("confirm_password")
         role = request.form.get("role")
         company_name = request.form.get("company_name")
-        num_of_positions = request.form.get("num_of_positions")
 
         if not email or not password or not confirm_password:
             flash("All fields are required.")
@@ -95,13 +94,27 @@ def signup():
             if is_first_user:
                 role = "admin"
 
+            new_user = None  # <- define it outside conditionals to avoid UnboundLocalError
+
             if role == "company":
-                company = Company(name=company_name, num_of_positions=num_of_positions)
+                company = Company(name=company_name)
                 db.session.add(company)
                 db.session.commit()
-                new_user = User(username=email, password=password, role="company", is_approved=False)
+
+                new_user = User(
+                    username=email,
+                    password=password,
+                    role="company",
+                    is_approved=False,
+                    company_id=company.id
+                )
             else:
-                new_user = User(username=email, password=password, role=role, is_approved=False)
+                new_user = User(
+                    username=email,
+                    password=password,
+                    role=role,
+                    is_approved=False
+                )
 
             db.session.add(new_user)
             db.session.commit()
@@ -109,7 +122,6 @@ def signup():
             return redirect(url_for("login"))
 
     return render_template("signup.html", show_admin_option=is_first_user)
-
 @app.route("/logout")
 def logout():
     session.clear()
@@ -164,35 +176,40 @@ def view_assignments():
         output.append(f"{student.first_name} {student.last_name} : {company.name}")
     return "<br>".join(output)
 
-@app.route("/company/add-residency", methods=["GET", "POST"])
+@app.route("/company/add_residency", methods=["GET", "POST"])
 def add_residency():
     # Check if user is logged in and is an approved company
     if session.get("role") != "company":
         flash("Company access only.")
         return redirect(url_for("login"))
+
     user = User.query.get(session["company_id"])
     if not user or not user.is_approved:
         flash("Your account is pending admin approval.")
         return redirect(url_for("index"))
 
+    company = Company.query.get(user.company_id)
+    if not company:
+        flash("Associated company not found.")
+        return redirect(url_for("index"))
 
     if request.method == "POST":
         title = request.form.get("title")
         description = request.form.get("description")
         num_of_residencies = request.form.get("num_of_residencies")
-        # Add more fields as needed
 
         new_position = ResidencyPosition(
             title=title,
             description=description,
-            num_of_residencies=num_of_residencies
+            num_of_residencies=num_of_residencies,
+            company_id=company.id  # ✅ LINK IT PROPERLY
         )
         db.session.add(new_position)
         db.session.commit()
         flash("Residency position added!")
-        return redirect(url_for("add-residency"))
+        return redirect(url_for("add_residency"))
 
-    return render_template("add_residency.html")
+    return render_template("add_residency.html", company_name=company.name)
 
 if __name__ == "__main__":
     app.run(debug=True)
