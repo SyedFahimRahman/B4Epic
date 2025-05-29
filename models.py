@@ -7,7 +7,7 @@ class User(db.Model):
     password = db.Column(db.String(100))
     role = db.Column(db.String(20))
     created_at = db.Column(db.DateTime)
-    is_approved = db.Column(db.Boolean, default=False)  
+    is_approved = db.Column(db.Boolean, default=False)
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,6 +41,7 @@ class Company(db.Model):
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     num_of_positions = db.Column(db.Integer)
     interview_required = db.Column(db.Boolean)
+    
 
 class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -65,7 +66,6 @@ class Ranking(db.Model):
     rank_score = db.Column(db.Integer)
 
 class ResidencyPosition(db.Model):
-    __tablename__ = 'residency_position'
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     year = db.Column(db.Integer)
