@@ -154,7 +154,7 @@ def view_assignments():
     return "<br>".join(output)
 
 @app.route("/company/add-residency", methods=["GET", "POST"])
-def company_add_residency():
+def add_residency():
     # Check if user is logged in and is an approved company
     if session.get("role") != "company":
         flash("Company access only.")
