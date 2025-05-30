@@ -1,11 +1,10 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, Residency, ResidencyPosition, Preference
+from models import User, Student, QCA, Company, ResidencyPosition, Preference
 from datetime import datetime
 import random
 
 with app.app_context():
-    db.drop_all()
     db.create_all()
     
     """admin = User(

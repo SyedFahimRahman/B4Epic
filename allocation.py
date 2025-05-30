@@ -26,7 +26,7 @@ def run_allocation(round_number):
 
 #     Checking how many residencies are available per company
 
-    positions = ResidencyPosition.query.filter_by(year = datetime.now().year).all()
+    positions = ResidencyPosition.query.all()
     available_slots = {pos.company_id: pos.num_of_residencies for pos in positions}
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())
@@ -64,7 +64,7 @@ def run_initial_interview_matching(round_number):
     students = Student.query.all()
 
     # Get list of available companies for this year
-    available_positions = ResidencyPosition.query.filter_by(year=datetime.now().year).all()
+    available_positions = ResidencyPosition.query.all()
     all_company_ids = [pos.company_id for pos in available_positions]
 
     # Loop through each student
