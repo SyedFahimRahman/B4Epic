@@ -53,12 +53,12 @@ class Company(db.Model):
     address = db.relationship('Address', backref='companies', lazy=True)
 
 
-class Preference(db.Model):
+"""class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     preference_rank = db.Column(db.Integer)
-
+"""
 
 class Round(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -75,9 +75,8 @@ class Interview(db.Model):
 class Ranking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
-    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     residency_id = db.Column(db.Integer, db.ForeignKey('residency_position.id'))
-    rank_score = db.Column(db.Integer)  # 1 = highest preference
+    rank = db.Column(db.Integer)  # 1 = highest preference
 
 
 class ResidencyPosition(db.Model):
@@ -101,7 +100,6 @@ class CompanyAssignment(db.Model):
     round_id = db.Column(db.Integer, db.ForeignKey('round.id'))
     residency_id = db.Column(db.Integer, db.ForeignKey('residency_position.id'))
     title = db.Column(db.String(100))
-
     student = db.relationship('Student', backref='assignments', lazy=True)
     residency = db.relationship('ResidencyPosition', backref='assignments', lazy=True)
     company = db.relationship('Company', backref='company_assignments', lazy=True)

@@ -1,12 +1,12 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
 from functools import wraps
 
-from assignment import get_allocation_details
+from allocation_results import get_allocation_details
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
-
+from allocation_results import allocate_students, get_allocation_details
 from api import api_bp
 from models import *
 
@@ -107,7 +107,7 @@ def signup():
             if is_first_user:
                 role = "admin"
 
-            new_user = None  # define it outside conditionals to avoid UnboundLocalError
+            new_user = None
 
             if role == "company":
                 company = Company(name=company_name)
@@ -123,6 +123,31 @@ def signup():
                 )
                 db.session.add(new_user)
                 db.session.commit()
+
+            elif role == "student":
+                first_name = request.form.get("first_name")
+                last_name = request.form.get("last_name")
+                phone_no = request.form.get("phone_no")
+
+                new_user = User(
+                    username=email,
+                    password=password,
+                    role="student",
+                    is_approved=False
+                )
+                db.session.add(new_user)
+                db.session.commit()
+
+                new_student = Student(
+                    id=new_user.id,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_no=phone_no,
+                    address_id=None  # You can modify this if you collect address info
+                )
+                db.session.add(new_student)
+                db.session.commit()
+
             else:
                 new_user = User(
                     username=email,
@@ -132,18 +157,6 @@ def signup():
                 )
                 db.session.add(new_user)
                 db.session.commit()
-
-                # If the user is a student, create the Student entry too:
-                if role == "student":
-                    new_student = Student(
-                        id=new_user.id,  # IMPORTANT: Student.id is FK to User.id
-                        first_name="",    # You can update this later with real data
-                        last_name="",
-                        phone_no="",
-                        address_id=None
-                    )
-                    db.session.add(new_student)
-                    db.session.commit()
 
             flash(f"{role.capitalize()} account created! Waiting for admin approval.")
             return redirect(url_for("login"))
@@ -338,43 +351,36 @@ def rank_residencies():
                 continue
             ranking = Ranking(
                 student_id=student_id,
-                company_id=pos.company_id,
                 residency_id=pos.id,
-                rank_score=rank
+                rank=rank
             )
             db.session.add(ranking)
 
         db.session.commit()
-        flash("Your rankings have been saved!")   # Flash message here
-
-        return redirect(url_for('index'))  # Redirect to home after submit
+        flash("Your rankings have been saved!")
+        return redirect(url_for('index'))
 
     return render_template('rank_residencies.html', positions=positions)
-"""@app.route('/run-allocation', methods=["POST"])
+
+@app.route('/run-allocation', methods=["POST"])
 def run_allocate_students():
-    # Check if the user is admin
     if session.get("role") != "admin":
         flash("Admin access only.")
         return redirect(url_for("login"))
 
     try:
-        result = allocate_students()
+        allocate_students()
         flash("Allocation complete.")
     except Exception as e:
         flash(f"Error during allocation: {str(e)}")
+        return redirect(url_for("admin_panel"))  # Only on error
 
-    return redirect(url_for("admin_panel"))
-@app.route('/allocations')
-def show_allocations():
-    data = get_allocation_details()
-    return render_template('allocation_results.html', allocations=data)
-"""
-from flask import jsonify
-
-from assignment import get_allocation_details
+    # On success, redirect to results!
+    return redirect(url_for("allocation_results"))
 
 @app.route("/allocation-results")
-def show_allocations():
+def allocation_results():
+    if session.get("role") != "admin":
+        return redirect(url_for("login"))
     allocations = get_allocation_details()
     return render_template("allocation_results.html", allocations=allocations)
-

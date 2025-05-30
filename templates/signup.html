@@ -50,6 +50,14 @@
           <input type="text" id="company_name" name="company_name" placeholder="Company Name">
         </div>
 
+      <!-- Inside your <form> -->
+<div id="student-fields" style="display: none; margin-top: 10px;">
+  <input type="text" id="first_name" name="first_name" placeholder="First Name" required>
+  <input type="text" id="last_name" name="last_name" placeholder="Last Name" required>
+  <input type="tel" id="phone" name="phone_no" placeholder="Phone Number" required>
+</div>
+
+
         <button type="submit">Sign-up</button>
 
         <p>Already have an account? <a href="{{ url_for('login') }}" id="register">Log in</a></p>
@@ -62,15 +70,20 @@
 function toggleCompanyFields() {
   const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
   const companyFields = document.getElementById('company-fields');
+  const studentFields = document.getElementById('student-fields');
+
   companyFields.style.display = selectedRole === 'company' ? 'block' : 'none';
+  studentFields.style.display = selectedRole === 'student' ? 'block' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  toggleCompanyFields();
-  var radios = document.querySelectorAll('input[name="role"]');
+  toggleCompanyFields();  // Call once on load
+  const radios = document.querySelectorAll('input[name="role"]');
   radios.forEach(function(radio) {
     radio.addEventListener('change', toggleCompanyFields);
   });
 });
 </script>
+
+
 {% endblock %}
