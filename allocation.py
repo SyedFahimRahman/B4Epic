@@ -1,6 +1,8 @@
-"""from extensions import db
-from models import Student, Preference, QCA, CompanyAssignment, ResidencyPosition, Round
+from extensions import db
+from models import Student, Preference, QCA, CompanyAssignment, ResidencyPosition, Interview, Round
+
 from datetime import datetime
+import random
 
 # function for allocation of students based on qca and preferences and company position availability
 def run_allocation(round_number):
@@ -25,7 +27,8 @@ def run_allocation(round_number):
 
 #     Checking how many residencies are available per company
 
-   positions = ResidencyPosition.query.filter_by(year = datetime.now().year).all()
+    positions = ResidencyPosition.query.all()
+
     available_slots = {pos.company_id: pos.num_of_residencies for pos in positions}
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())
@@ -48,6 +51,51 @@ def run_allocation(round_number):
                 break  # break the loop when student is assigned to a company
 
     db.session.commit()
-    return f"Allocation completed for round{round_number}"
 
-"""
+    return f"Allocation completed for round {round_number}"
+
+
+def run_initial_interview_matching(round_number):
+    # Making sure the round exists
+    round = Round.query.filter_by(round_number=round_number).first()
+    if not round:
+        round = Round(round_number=round_number)
+        db.session.add(round)
+        db.session.commit()
+
+     # Get all students
+    students = Student.query.all()
+
+    # Get list of available companies for this year
+    available_positions = ResidencyPosition.query.all()
+    all_company_ids = [pos.company_id for pos in available_positions]
+
+    # Loop through each student
+    for student in students:
+        # Get student's ranked preferences
+        preferences = Preference.query.filter_by(student_id=student.id).order_by(
+        Preference.preference_rank).all()
+        preferred_ids = [pref.company_id for pref in preferences]
+
+        # Take top 3 preferences, or fewer if not enough
+        selected_ids = preferred_ids[:3]
+
+        # If fewer than 3 preferences, randomly pick others from remaining companies
+        remaining_needed = 3 - len(selected_ids)
+        if remaining_needed > 0:
+            remaining_ids = list(set(all_company_ids) - set(selected_ids))
+            random.shuffle(remaining_ids)
+            selected_ids += remaining_ids[:remaining_needed]
+
+        # Create interview assignments
+        for company_id in selected_ids:
+            interview = Interview(
+                student_id=student.id,
+                company_id=company_id,
+                round_id=round.id
+            )
+            db.session.add(interview)
+
+
+    db.session.commit()
+    return f"Allocation completed for round{round_number}"
