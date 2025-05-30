@@ -38,6 +38,9 @@ def student_required(f):
 # ----------------- Public Routes -----------------
 @app.route("/")
 def index():
+    if session.get('role') == 'student':
+        student = Student.query.get(session.get('student_id'))
+        return render_template("index.html", student=student)
     return render_template("index.html")
 
 @app.route("/home")
@@ -240,6 +243,7 @@ def add_residency():
         residency_type = request.form.get("residency_type")  # dropdown value
         is_combined_str = request.form.get("is_combined")  # "true" or "false"
         year = request.form.get("year")
+        salary = request.form.get("salary")
 
         is_combined = True if is_combined_str == "true" else False
 
@@ -280,7 +284,8 @@ def add_residency():
             residency=residency_type,
             is_combined=is_combined,
             company_id=company.id,
-            year = year
+            year = year,
+            salary = salary
         )
 
         db.session.add(new_position)
@@ -302,6 +307,12 @@ def add_residency():
 
 @app.route("/residencies")
 def list_residencies():
+    student_id = session.get('student_id')
+    student = Student.query.get(student_id)
+    if not student:
+        flash("Student not found.")
+        return redirect(url_for('index'))
+
     # Query all ResidencyPositions with their related Company and Address data
     positions = db.session.query(
         ResidencyPosition,
@@ -309,6 +320,7 @@ def list_residencies():
         Address
     ).join(Company, ResidencyPosition.company_id == Company.id
     ).join(Address, Company.address_id == Address.id
+    ).filter(ResidencyPosition.year == student.year  # <-- Add this filter
     ).all()
 
     # Prepare a list of dicts to send to template
@@ -340,7 +352,6 @@ def rank_residencies(year):
         flash("Student not found.")
         return redirect(url_for('index'))
 
-    # Students can only rank residencies for their own year
     if student.year != year:
         flash("You cannot access another year's ranking page.")
         return redirect(url_for('index'))
@@ -355,10 +366,8 @@ def rank_residencies(year):
 
         position_ids = position_order_str.split(',')
 
-        # Delete old rankings for this student
         Ranking.query.filter_by(student_id=student_id).delete()
 
-        # Add new rankings
         for rank, pos_id in enumerate(position_ids, start=1):
             pos = ResidencyPosition.query.get(int(pos_id))
             if pos is None:
@@ -374,7 +383,7 @@ def rank_residencies(year):
         flash("Your rankings have been saved!")
         return redirect(url_for('index'))
 
-    return render_template('rank_residencies.html', positions=positions, year=year)
+    return render_template('rank_residencies.html', positions=positions, year=year, student=student)
 
 @app.route('/run-allocation/<int:year>', methods=["POST"])
 def run_allocate_students(year):
