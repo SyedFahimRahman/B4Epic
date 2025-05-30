@@ -1,5 +1,6 @@
 from extensions import db
 from models import Student, Preference, QCA, CompanyAssignment, ResidencyPosition, Interview, Round
+
 from datetime import datetime
 import random
 
@@ -27,6 +28,7 @@ def run_allocation(round_number):
 #     Checking how many residencies are available per company
 
     positions = ResidencyPosition.query.all()
+
     available_slots = {pos.company_id: pos.num_of_residencies for pos in positions}
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())
@@ -49,6 +51,7 @@ def run_allocation(round_number):
                 break  # break the loop when student is assigned to a company
 
     db.session.commit()
+
     return f"Allocation completed for round {round_number}"
 
 

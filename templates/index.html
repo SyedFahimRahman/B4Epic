@@ -11,5 +11,18 @@
     {% if session.get("role") == "student" and session.get("email") %}
       <a href="{{ url_for('rank_residencies') }}" class="btn btn-primary mt-3" style="font-size: 1.2em;"> Rank Residency Positions</a>
     {% endif %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
+
   </div>
 {% endblock %}

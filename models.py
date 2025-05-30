@@ -1,6 +1,5 @@
 from extensions import db
 
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True)
@@ -8,7 +7,9 @@ class User(db.Model):
     role = db.Column(db.String(20))
     is_approved = db.Column(db.Boolean, default=False)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
-    company = db.relationship('Company', backref='users')
+
+    company = db.relationship('Company', backref='users', lazy=True)
+
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -18,14 +19,17 @@ class Address(db.Model):
     county = db.Column(db.String(50))
     eircode = db.Column(db.String(10))
 
+
 class Student(db.Model):
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     phone_no = db.Column(db.String(20))
+    grade = db.Column(db.Integer)
+
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     address = db.relationship('Address', backref='students', lazy=True)
-    grade = db.Column(db.Integer)
+
 
 class QCA(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,17 +37,21 @@ class QCA(db.Model):
     semester = db.Column(db.Integer)
     qca_score = db.Column(db.Float)
 
+
 class CV(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), unique=True)
     file_path = db.Column(db.String(255))
 
+
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     contact = db.Column(db.String(100))
+
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     address = db.relationship('Address', backref='companies', lazy=True)
+
 
 class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,9 +59,11 @@ class Preference(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     preference_rank = db.Column(db.Integer)
 
+
 class Round(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     round_number = db.Column(db.Integer, unique=True)
+
 
 class Interview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,27 +71,41 @@ class Interview(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     round_id = db.Column(db.Integer, db.ForeignKey('round.id'))
 
+
 class Ranking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     residency_id = db.Column(db.Integer, db.ForeignKey('residency_position.id'))
-    rank_score = db.Column(db.Integer)
+    rank_score = db.Column(db.Integer)  # 1 = highest preference
+
 
 class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
+
     residency = db.Column(db.Text)
-    num_of_residencies = db.Column(db.Integer)
-    title = db.Column(db.String(100))  # <-- Add this line
+    title = db.Column(db.String(100))
     description = db.Column(db.Text)
+    num_of_residencies = db.Column(db.Integer)
     is_combined = db.Column(db.Boolean, default=False)
-    company = db.relationship('Company', backref='residency_positions')
+
+    company = db.relationship('Company', backref='residency_positions', lazy=True)
+
 
 class CompanyAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     round_id = db.Column(db.Integer, db.ForeignKey('round.id'))
+    residency_id = db.Column(db.Integer, db.ForeignKey('residency_position.id'))
+    title = db.Column(db.String(100))
+
+    student = db.relationship('Student', backref='assignments', lazy=True)
+    residency = db.relationship('ResidencyPosition', backref='assignments', lazy=True)
+    company = db.relationship('Company', backref='company_assignments', lazy=True)
+
 
 class ISEResidencyTeam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
