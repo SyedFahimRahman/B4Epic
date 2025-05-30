@@ -9,9 +9,8 @@
     {% endif %}
 
     {% if session.get("role") == "student" and session.get("email") %}
-      <a href="{{ url_for('rank_residencies') }}" class="btn btn-primary mt-3" style="font-size: 1.2em;"> Rank Residency Positions</a>
+      <a href="{{ url_for('rank_residencies', year=student.year) }}" class="btn btn-primary mt-3" style="font-size: 1.2em;"> Rank Residency Positions</a>
     {% endif %}
-
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul class="flashes">
