@@ -1,13 +1,15 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
 from functools import wraps
 
-from allocation import run_allocation
+from assignment import get_allocation_details
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
 
 from api import api_bp
+from models import *
+
 
 # Blueprints (optional modular organization)
 from flask import Blueprint
@@ -77,6 +79,7 @@ def login():
                     return render_template("login.html")
                 session["email"] = email
                 session["role"] = user.role
+                session["student_id"] = user.id
                 return redirect(url_for("index"))
         flash("Invalid credentials.")
     return render_template("login.html")
@@ -179,18 +182,14 @@ def admin_panel():
     pending_users = User.query.filter_by(is_approved=False).all()
     return render_template("admin.html", pending_users=pending_users)
 
-
-
-#  creating route for allocation function of residency assignment
 # ----------------- Allocation Routes -----------------
-@app.route('/run-allocation')
+"""@app.route('/run-allocation')
 def run_allocation_route():
     result = run_allocation(round_number=1)
     return result
+"""
 
-
-# creating route for company assignments
-
+# ----------------- Company Assignments -----------------
 @app.route('/view-assignments')
 def view_assignments():
     assignments = CompanyAssignment.query.all()
@@ -318,12 +317,8 @@ def list_residencies():
 @app.route('/student/rank_residencies', methods=['GET', 'POST'])
 @student_required
 def rank_residencies():
-    if session.get('role') != 'student':
-        flash("You must be logged in as a student.")
-        return redirect(url_for('login'))
-
     student_id = session.get('student_id')
-    positions = ResidencyPosition.query.all()  # Or filter as needed
+    positions = ResidencyPosition.query.all()
 
     if request.method == 'POST':
         position_order_str = request.form.get('position_order', '')
@@ -333,24 +328,53 @@ def rank_residencies():
 
         position_ids = position_order_str.split(',')
 
-        # Delete old rankings
+        # Delete old rankings for this student
         Ranking.query.filter_by(student_id=student_id).delete()
 
         # Add new rankings
         for rank, pos_id in enumerate(position_ids, start=1):
-            ranking = Ranking(student_id=student_id, residency_id=int(pos_id), rank_score=rank)
+            pos = ResidencyPosition.query.get(int(pos_id))
+            if pos is None:
+                continue
+            ranking = Ranking(
+                student_id=student_id,
+                company_id=pos.company_id,
+                residency_id=pos.id,
+                rank_score=rank
+            )
             db.session.add(ranking)
 
         db.session.commit()
-        flash("Your rankings have been saved!")
-        return redirect(url_for('rank_residencies'))
+        flash("Your rankings have been saved!")   # Flash message here
+
+        return redirect(url_for('index'))  # Redirect to home after submit
 
     return render_template('rank_residencies.html', positions=positions)
+"""@app.route('/run-allocation', methods=["POST"])
+def run_allocate_students():
+    # Check if the user is admin
+    if session.get("role") != "admin":
+        flash("Admin access only.")
+        return redirect(url_for("login"))
 
-from functools import wraps
-from flask import session, redirect, url_for, flash
+    try:
+        result = allocate_students()
+        flash("Allocation complete.")
+    except Exception as e:
+        flash(f"Error during allocation: {str(e)}")
 
+    return redirect(url_for("admin_panel"))
+@app.route('/allocations')
+def show_allocations():
+    data = get_allocation_details()
+    return render_template('allocation_results.html', allocations=data)
+"""
+from flask import jsonify
 
+from assignment import get_allocation_details
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route("/allocation-results")
+def show_allocations():
+    allocations = get_allocation_details()
+    return render_template("allocation_results.html", allocations=allocations)
+

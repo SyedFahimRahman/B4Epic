@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Allocation Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Company Assignment Results</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Residency ID</th>
+                <th>Company</th>
+                <th>Job Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alloc in allocations %}
+                <tr>
+                    <td>{{ alloc.student_id }}</td>
+                    <td>{{ alloc.residency_id }}</td>
+                    <td>{{ alloc.company_name or 'N/A' }}</td>
+                    <td>{{ alloc.job_title or 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

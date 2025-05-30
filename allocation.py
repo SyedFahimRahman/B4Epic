@@ -1,4 +1,4 @@
-from extensions import db
+"""from extensions import db
 from models import Student, Preference, QCA, CompanyAssignment, ResidencyPosition, Round
 from datetime import datetime
 
@@ -25,7 +25,7 @@ def run_allocation(round_number):
 
 #     Checking how many residencies are available per company
 
-    positions = ResidencyPosition.query.filter_by(year = datetime.now().year).all()
+   positions = ResidencyPosition.query.filter_by(year = datetime.now().year).all()
     available_slots = {pos.company_id: pos.num_of_residencies for pos in positions}
 
     assigned_students = set(a.student_id for a in CompanyAssignment.query.all())
@@ -49,3 +49,5 @@ def run_allocation(round_number):
 
     db.session.commit()
     return f"Allocation completed for round{round_number}"
+
+"""
