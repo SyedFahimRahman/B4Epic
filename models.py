@@ -26,7 +26,7 @@ class Student(db.Model):
     last_name = db.Column(db.String(100))
     phone_no = db.Column(db.String(20))
     grade = db.Column(db.Integer)
-
+    year = db.Column(db.Integer)
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     address = db.relationship('Address', backref='students', lazy=True)
 
@@ -82,13 +82,12 @@ class Ranking(db.Model):
 class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
-
+    year = db.Column(db.Integer)
     residency = db.Column(db.Text)
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
     num_of_residencies = db.Column(db.Integer)
     is_combined = db.Column(db.Boolean, default=False)
-
     company = db.relationship('Company', backref='residency_positions', lazy=True)
 
 

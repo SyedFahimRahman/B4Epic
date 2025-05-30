@@ -128,6 +128,7 @@ def signup():
                 first_name = request.form.get("first_name")
                 last_name = request.form.get("last_name")
                 phone_no = request.form.get("phone_no")
+                year = request.form.get("year")
 
                 new_user = User(
                     username=email,
@@ -143,6 +144,7 @@ def signup():
                     first_name=first_name,
                     last_name=last_name,
                     phone_no=phone_no,
+                    year=year,
                     address_id=None  # You can modify this if you collect address info
                 )
                 db.session.add(new_student)
@@ -237,6 +239,7 @@ def add_residency():
         num_of_residencies = request.form.get("num_of_residencies")
         residency_type = request.form.get("residency_type")  # dropdown value
         is_combined_str = request.form.get("is_combined")  # "true" or "false"
+        year = request.form.get("year")
 
         is_combined = True if is_combined_str == "true" else False
 
@@ -276,7 +279,8 @@ def add_residency():
             num_of_residencies=num_of_residencies,
             residency=residency_type,
             is_combined=is_combined,
-            company_id=company.id
+            company_id=company.id,
+            year = year
         )
 
         db.session.add(new_position)
@@ -327,17 +331,27 @@ def list_residencies():
 
     return render_template("residency_list.html", residencies=residencies_data)
 
-@app.route('/student/rank_residencies', methods=['GET', 'POST'])
+@app.route('/student/rank_residencies/<int:year>', methods=['GET', 'POST'])
 @student_required
-def rank_residencies():
+def rank_residencies(year):
     student_id = session.get('student_id')
-    positions = ResidencyPosition.query.all()
+    student = Student.query.get(student_id)
+    if not student:
+        flash("Student not found.")
+        return redirect(url_for('index'))
+
+    # Students can only rank residencies for their own year
+    if student.year != year:
+        flash("You cannot access another year's ranking page.")
+        return redirect(url_for('index'))
+
+    positions = ResidencyPosition.query.filter_by(year=year).all()
 
     if request.method == 'POST':
         position_order_str = request.form.get('position_order', '')
         if not position_order_str:
             flash("Please rank the positions before submitting.")
-            return redirect(url_for('rank_residencies'))
+            return redirect(url_for('rank_residencies', year=year))
 
         position_ids = position_order_str.split(',')
 
@@ -360,27 +374,31 @@ def rank_residencies():
         flash("Your rankings have been saved!")
         return redirect(url_for('index'))
 
-    return render_template('rank_residencies.html', positions=positions)
+    return render_template('rank_residencies.html', positions=positions, year=year)
 
-@app.route('/run-allocation', methods=["POST"])
-def run_allocate_students():
+@app.route('/run-allocation/<int:year>', methods=["POST"])
+def run_allocate_students(year):
     if session.get("role") != "admin":
         flash("Admin access only.")
         return redirect(url_for("login"))
 
     try:
-        allocate_students()
-        flash("Allocation complete.")
+        allocate_students(year=year)  # Pass year to your allocation function
+        flash(f"Allocation complete for Year {year}.")
     except Exception as e:
         flash(f"Error during allocation: {str(e)}")
         return redirect(url_for("admin_panel"))  # Only on error
 
     # On success, redirect to results!
-    return redirect(url_for("allocation_results"))
+    return redirect(url_for("allocation_results", year=year))
 
-@app.route("/allocation-results")
-def allocation_results():
+@app.route("/allocation-results/<int:year>")
+def allocation_results(year):
     if session.get("role") != "admin":
         return redirect(url_for("login"))
-    allocations = get_allocation_details()
-    return render_template("allocation_results.html", allocations=allocations)
+
+    allocations = [
+        alloc for alloc in get_allocation_details()
+        if Student.query.get(alloc['student_id']).year == year
+    ]
+    return render_template("allocation_result.html", allocations=allocations, year=year)

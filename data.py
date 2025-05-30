@@ -6,16 +6,7 @@ import random
 
 with app.app_context():
     db.create_all()
-    
-    """admin = User(
-    username="admin@admin.com",
-    password="admin",  # Use a hashed password in production!
-    role="admin",
-    is_approved=True
-    )
-    db.session.add(admin)
-    db.session.commit()
-    """
+
 
     # creating users
     user1 = User(username = "waleed.ahmad", password = "w1234", role = "student")
