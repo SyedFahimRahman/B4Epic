@@ -90,6 +90,7 @@ class ResidencyPosition(db.Model):
     is_combined = db.Column(db.Boolean, default=False)
     company = db.relationship('Company', backref='residency_positions', lazy=True)
     salary= db.Column(db.Float)
+    is_approved = db.Column(db.Boolean, default=False)
 
 
 class CompanyAssignment(db.Model):
