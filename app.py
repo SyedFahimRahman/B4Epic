@@ -38,7 +38,11 @@ def student_required(f):
 # ----------------- Public Routes -----------------
 @app.route("/")
 def index():
-    return render_template("index.html")
+    student = None
+    if session.get("role") == "student" and session.get("student_id"):
+        from models import Student
+        student = Student.query.get(session["student_id"])
+    return render_template("index.html", student=student)
 
 @app.route("/home")
 def home():
@@ -110,9 +114,25 @@ def signup():
             new_user = None
 
             if role == "company":
-                company = Company(name=company_name)
+                line_1 = request.form.get("line_1")
+                line_2 = request.form.get("line_2")
+                town = request.form.get("town")
+                county = request.form.get("county")
+                eircode = request.form.get("eircode")
+
+                # Create address
+                address = Address(
+                    line_1=line_1,
+                    line_2=line_2,
+                    town=town,
+                    county=county,
+                    eircode=eircode
+                )
+                db.session.add(address)
+                db.session.flush()
+                company = Company(name=company_name, address_id = address.id)
                 db.session.add(company)
-                db.session.commit()
+                db.session.flush()
 
                 new_user = User(
                     username=email,
@@ -360,7 +380,9 @@ def rank_residencies():
         flash("Your rankings have been saved!")
         return redirect(url_for('index'))
 
-    return render_template('rank_residencies.html', positions=positions)
+    student = Student.query.get(student_id)
+    return render_template('rank_residencies.html', positions=positions, student=student)
+
 
 @app.route('/run-allocation', methods=["POST"])
 def run_allocate_students():
@@ -384,3 +406,7 @@ def allocation_results():
         return redirect(url_for("login"))
     allocations = get_allocation_details()
     return render_template("allocation_results.html", allocations=allocations)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -1,6 +1,6 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, ResidencyPosition, Preference
+from models import User, Student, QCA, Company, ResidencyPosition
 from datetime import datetime
 import random
 
