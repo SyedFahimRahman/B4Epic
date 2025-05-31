@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\sreej\PycharmProjects\B4Epic\app\templates\signup.html -->
 {% extends "base.html" %}
 
 {% block head %}
@@ -13,42 +12,37 @@
 
       {% with messages = get_flashed_messages() %}
         {% if messages %}
-          <ul class="flash-messages">
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
+          <ul class="flash-messages" style="list-style: none; padding: 0; margin: 20px 0; color: yellow;">
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
           </ul>
         {% endif %}
       {% endwith %}
 
-      <form method="POST">
+      <form method="POST" onsubmit="return validateSignupForm();">
         <input type="email" id="email" name="email" required placeholder="Email">
-
         <input type="password" id="password" name="password" required placeholder="Password">
-
         <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm Password">
 
         <div class="role-selection">
-  <label>
-    <input type="radio" name="role" value="student" required onclick="toggleCompanyFields()">
-    Student
-  </label>
-  <label>
-    <input type="radio" name="role" value="company" required onclick="toggleCompanyFields()">
-    Company
-  </label>
-  {% if show_admin_option %}
-  <label>
-    <input type="radio" name="role" value="admin" required onclick="toggleCompanyFields()">
-    Admin
-  </label>
-  {% endif %}
-</div>
+          <label><input type="radio" name="role" value="student" required onclick="toggleFields()"> Student</label>
+          <label><input type="radio" name="role" value="company" required onclick="toggleFields()"> Company</label>
+          {% if show_admin_option %}
+          <label><input type="radio" name="role" value="admin" required onclick="toggleFields()"> Admin</label>
+          {% endif %}
+        </div>
 
-
+        <!-- COMPANY FIELDS -->
         <div id="company-fields" style="display: none; margin-top: 10px;">
           <input type="text" id="company_name" name="company_name" placeholder="Company Name">
+          <input type="text" id="line_1" name="line_1" placeholder="Address Line 1">
+          <input type="text" id="line_2" name="line_2" placeholder="Address Line 2">
+          <input type="text" id="town" name="town" placeholder="Town">
+          <input type="text" id="county" name="county" placeholder="County">
+          <input type="text" id="eircode" name="eircode" placeholder="Eircode">
         </div>
+
 
 
 <div id="student-fields" style="display: none; margin-top: 10px;">
@@ -59,7 +53,6 @@
 
 </div>
 
-
         <button type="submit">Sign-up</button>
 
         <p>Already have an account? <a href="{{ url_for('login') }}" id="register">Log in</a></p>
@@ -69,23 +62,34 @@
 </div>
 
 <script>
-function toggleCompanyFields() {
-  const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+function toggleFields() {
+  const role = document.querySelector('input[name="role"]:checked')?.value;
   const companyFields = document.getElementById('company-fields');
   const studentFields = document.getElementById('student-fields');
 
-  companyFields.style.display = selectedRole === 'company' ? 'block' : 'none';
-  studentFields.style.display = selectedRole === 'student' ? 'block' : 'none';
+  companyFields.style.display = role === 'company' ? 'block' : 'none';
+  studentFields.style.display = role === 'student' ? 'block' : 'none';
+
+  document.getElementById('company_name').required = (role === 'company');
+  ['line_1', 'town', 'county', 'eircode'].forEach(id => {
+    document.getElementById(id).required = (role === 'company');
+  });
+
+  document.getElementById('first_name').required = (role === 'student');
+  document.getElementById('last_name').required = (role === 'student');
+  document.getElementById('phone').required = (role === 'student');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  toggleCompanyFields();  // Call once on load
-  const radios = document.querySelectorAll('input[name="role"]');
-  radios.forEach(function(radio) {
-    radio.addEventListener('change', toggleCompanyFields);
+function validateSignupForm() {
+  toggleFields();
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  toggleFields();
+  document.querySelectorAll('input[name="role"]').forEach(function (radio) {
+    radio.addEventListener('change', toggleFields);
   });
 });
 </script>
-
-
 {% endblock %}

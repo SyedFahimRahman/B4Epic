@@ -38,6 +38,7 @@ def student_required(f):
 # ----------------- Public Routes -----------------
 @app.route("/")
 def index():
+
     if session.get('role') == 'student':
         student = Student.query.get(session.get('student_id'))
         return render_template("index.html", student=student)
@@ -113,9 +114,25 @@ def signup():
             new_user = None
 
             if role == "company":
-                company = Company(name=company_name)
+                line_1 = request.form.get("line_1")
+                line_2 = request.form.get("line_2")
+                town = request.form.get("town")
+                county = request.form.get("county")
+                eircode = request.form.get("eircode")
+
+                # Create address
+                address = Address(
+                    line_1=line_1,
+                    line_2=line_2,
+                    town=town,
+                    county=county,
+                    eircode=eircode
+                )
+                db.session.add(address)
+                db.session.flush()
+                company = Company(name=company_name, address_id = address.id)
                 db.session.add(company)
-                db.session.commit()
+                db.session.flush()
 
                 new_user = User(
                     username=email,
@@ -343,6 +360,7 @@ def list_residencies():
 
     return render_template("residency_list.html", residencies=residencies_data)
 
+
 @app.route('/student/rank_residencies/<int:year>', methods=['GET', 'POST'])
 @student_required
 def rank_residencies(year):
@@ -367,6 +385,7 @@ def rank_residencies(year):
         position_ids = position_order_str.split(',')
 
         Ranking.query.filter_by(student_id=student_id).delete()
+
 
         for rank, pos_id in enumerate(position_ids, start=1):
             pos = ResidencyPosition.query.get(int(pos_id))
@@ -405,6 +424,7 @@ def run_allocate_students(year):
 def allocation_results(year):
     if session.get("role") != "admin":
         return redirect(url_for("login"))
+
 
     allocations = [
         alloc for alloc in get_allocation_details()
