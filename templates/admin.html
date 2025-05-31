@@ -113,23 +113,15 @@
 </div>
 
 <!-- Run Allocation Button -->
-<div style="margin-top: 40px;">
-  <form id="run-allocation-form" method="POST">
-    <select id="year-select" required>
-      <option value="1">Year 1</option>
-      <option value="2">Year 2</option>
-      <option value="3">Year 3</option>
-      <option value="4">Year 4</option>
-    </select>
-    <button type="submit" class="btn btn-primary">Run Allocation</button>
-  </form>
-</div>
+<form action="/run-allocation" method="POST">
+  <select name="year" required>
+    <option value="1">Year 1</option>
+    <option value="2">Year 2</option>
+    <option value="3">Year 3</option>
+    <option value="4">Year 4</option>
+  </select>
+  <button type="submit">Run Allocation</button>
+</form>
 
-<script>
-document.getElementById('run-allocation-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const year = document.getElementById('year-select').value;
-  window.location.href = `/run-allocation/${year}`;
-});
-</script>
+
 {% endblock %}
