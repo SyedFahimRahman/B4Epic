@@ -8,7 +8,6 @@ from flask_migrate import Migrate
 from config import Config
 from allocation_results import allocate_students, get_allocation_details
 from api import api_bp
-from models import *
 
 
 # Blueprints (optional modular organization)
@@ -344,6 +343,11 @@ def add_residency():
 
 @app.route("/residencies")
 def list_residencies():
+    student = None
+    if session.get("role") == "student" and session.get("student_id"):
+        student = Student.query.get(session["student_id"])
+        # Remove any incomplete or extra lines like "student = " here!
+
     # Query all ResidencyPositions with their related Company and Address data
     positions = db.session.query(
         ResidencyPosition,
@@ -371,15 +375,19 @@ def list_residencies():
             "eircode": address.eircode,
         })
 
-    return render_template("residency_list.html", residencies=residencies_data)
+    return render_template("residency_list.html", residencies=residencies_data, student=student)
 
-@app.route('/student/rank_residencies', methods=['GET', 'POST'])
+@app.route('/student/rank_residencies/<int:year>', methods=['GET', 'POST'])
 @student_required
-def rank_residencies():
+def rank_residencies(year):
     student_id = session.get('student_id')
     student = Student.query.get(student_id)
     if not student:
         flash("Student not found.")
+        return redirect(url_for('index'))
+
+    if student.year != year:
+        flash("You cannot access another year's ranking page.")
         return redirect(url_for('index'))
 
     # Only show positions for the student's year
@@ -389,7 +397,7 @@ def rank_residencies():
         position_order_str = request.form.get('position_order', '')
         if not position_order_str:
             flash("Please rank the positions before submitting.")
-            return redirect(url_for('rank_residencies'))
+            return redirect(url_for('rank_residencies',year=year))
 
         position_ids = position_order_str.split(',')
 
@@ -413,31 +421,46 @@ def rank_residencies():
         return redirect(url_for('index'))
 
     return render_template('rank_residencies.html', positions=positions, student=student)
-
+@app.route('/student/view_rankings')
+@student_required
+def view_rankings():
+    student_id = session.get('student_id')
+    # Join Ranking with ResidencyPosition and Company for display
+    rankings = (
+        db.session.query(Ranking, ResidencyPosition, Company)
+        .join(ResidencyPosition, Ranking.residency_id == ResidencyPosition.id)
+        .join(Company, ResidencyPosition.company_id == Company.id)
+        .filter(Ranking.student_id == student_id)
+        .order_by(Ranking.rank)
+        .all()
+    )
+    return render_template('view_rankings.html', rankings=rankings)
 
 @app.route('/run-allocation', methods=["POST"])
 def run_allocate_students():
+    year = request.form.get("year", type=int)
     if session.get("role") != "admin":
         flash("Admin access only.")
         return redirect(url_for("login"))
 
     try:
-        allocate_students()
-        flash("Allocation complete.")
+        print(allocate_students)
+        CompanyAssignment.query.filter_by(round_id=1).delete()
+        db.session.commit() #clear all like matching
+
+        allocate_students(year)
+        flash(f"Allocation complete for Year {year}.")
+        return redirect(url_for("allocation_results", year=year))
     except Exception as e:
         flash(f"Error during allocation: {str(e)}")
-        return redirect(url_for("admin_panel"))  # Only on error
-
-    # On success, redirect to results!
-    return redirect(url_for("allocation_results"))
+        return redirect(url_for("admin_panel"))
 
 @app.route("/allocation-results")
 def allocation_results():
-    if session.get("role") != "admin":
-        return redirect(url_for("login"))
-    allocations = get_allocation_details()
-    return render_template("allocation_results.html", allocations=allocations)
-
+        if session.get("role") != "admin":
+            return redirect(url_for("login"))
+        allocations = get_allocation_details()
+        return render_template("allocation_results.html", allocations=allocations)
 
 if __name__ == '__main__':
     app.run(debug=True)

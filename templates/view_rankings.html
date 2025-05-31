@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2 style="color:#2e7d32; margin-bottom: 24px;">Your Residency Rankings</h2>
+  {% if rankings %}
+    <table style="
+      width: 100%;
+      border-collapse: collapse;
+      background: #e8f5e9;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(46,125,50,0.07);">
+      <thead>
+        <tr style="background: #388e3c; color: #fff;">
+          <th style="padding: 12px;">Rank</th>
+          <th style="padding: 12px;">Company</th>
+          <th style="padding: 12px;">Residency Title</th>
+          <th style="padding: 12px;">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ranking, position, company in rankings %}
+        <tr style="border-bottom: 1px solid #c8e6c9;">
+          <td style="padding: 12px; color: #388e3c; font-weight: bold;">{{ ranking.rank }}</td>
+          <td style="padding: 12px;">{{ company.name }}</td>
+          <td style="padding: 12px;">{{ position.title }}</td>
+          <td style="padding: 12px;">{{ position.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div style="color: #388e3c; font-size: 1.2em;">You have not ranked any residencies yet.</div>
+  {% endif %}
+{% endblock %}

@@ -1,13 +1,16 @@
-from models import db, Student, Ranking, ResidencyPosition, CompanyAssignment
 from sqlalchemy.orm import joinedload
 
-def allocate_students():
-    # Clear previous assignments
-    CompanyAssignment.query.delete()
+from models import db, Student, Ranking, ResidencyPosition, CompanyAssignment
+
+def allocate_students(year):
+    # Clear old assignments for this round
+    CompanyAssignment.query.filter_by(round_id=1).delete()
     db.session.commit()
 
     assigned_students = set()
     residency_slots = {}
+
+    # Load available slots for each residency
     all_positions = ResidencyPosition.query.all()
     for pos in all_positions:
         residency_slots[pos.id] = {
@@ -15,32 +18,38 @@ def allocate_students():
             "assigned": 0
         }
 
-    # Order students by grade ASC (lowest grade = highest priority)
-    students = Student.query.order_by(Student.grade.asc()).all()
+    # Filter students by year and order by grade (lowest grade = highest priority)
+    students = Student.query.filter_by(year=year).order_by(Student.grade.asc()).all()
     for student in students:
         if student.id in assigned_students:
-            continue
+            continue  # Skip if already assigned
 
-        # Use 'rank' field for ordering
+        # Get this student's rankings, ordered by preference (lowest rank = top choice)
         rankings = Ranking.query.filter_by(student_id=student.id).order_by(Ranking.rank.asc()).all()
         for rank in rankings:
             slot_info = residency_slots.get(rank.residency_id)
             if slot_info and slot_info["assigned"] < slot_info["total"]:
+                # Assign the student to this residency
                 res_pos = ResidencyPosition.query.get(rank.residency_id)
                 assignment = CompanyAssignment(
                     student_id=student.id,
                     company_id=res_pos.company_id,
                     residency_id=res_pos.id,
                     title=res_pos.title,
-                    round_id=1
+                    round_id=1  # Ensure round_id=1 exists in round table
                 )
                 db.session.add(assignment)
                 slot_info["assigned"] += 1
                 assigned_students.add(student.id)
-                break
+                break  # Move to next student
 
-    db.session.commit()
-    return f"Successfully assigned {len(assigned_students)} students."
+    try:
+        db.session.commit()
+        return f"Successfully assigned {len(assigned_students)} students."
+    except Exception as e:
+        db.session.rollback()
+        return f"Error during allocation: {str(e)}"
+
 
 def get_allocation_details():
     allocations = CompanyAssignment.query.options(
