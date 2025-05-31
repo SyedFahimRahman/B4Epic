@@ -1,21 +1,11 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, ResidencyPosition, Preference
+from models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
 from datetime import datetime
-import random
 
 with app.app_context():
+    db.drop_all()
     db.create_all()
-    
-    """admin = User(
-    username="admin@admin.com",
-    password="admin",  # Use a hashed password in production!
-    role="admin",
-    is_approved=True
-    )
-    db.session.add(admin)
-    db.session.commit()
-    """
 
     # creating users
     user1 = User(username = "waleed.ahmad", password = "w1234", role = "student")
@@ -28,12 +18,7 @@ with app.app_context():
     user8 = User(username="ciaran.lynch", password="c1234", role="student")
     user9 = User(username="sebastian.kimmel", password="s1234", role="student")
     user10 = User(username="timothy.lazo", password="t1234", role="student")
-    user11 = User(username="john.doe", password="j1234", role="company")
-    user12 = User(username="jane.smith", password="j1234", role="company")
-    user13 = User(username="company1", password="c1234", role="company")
-    user14 = User(username="company2", password="c1234", role="company")
-    
-    db.session.add_all([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14])
+    db.session.add_all([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10])
     db.session.flush() #to get IDs
 
     # creating students
@@ -51,104 +36,57 @@ with app.app_context():
     db.session.commit()
 
     # qca scores
-    # Add QCA scores for students
-    qca_list = [
-        QCA(student_id=student1.id, semester=1, qca_score=3.7),
-        QCA(student_id=student2.id, semester=1, qca_score=3.9),
-        QCA(student_id=student3.id, semester=1, qca_score=3.6),
-        QCA(student_id=student4.id, semester=1, qca_score=3.5),
-        QCA(student_id=student5.id, semester=1, qca_score=3.4),
-        QCA(student_id=student6.id, semester=1, qca_score=3.3),
-        QCA(student_id=student7.id, semester=1, qca_score=3.2),
-        QCA(student_id=student8.id, semester=1, qca_score=3.1),
-        QCA(student_id=student9.id, semester=1, qca_score=3.0),
-        QCA(student_id=student10.id, semester=1, qca_score=2.9),
-    ]
-    db.session.add_all(qca_list)
-    db.session.commit()
+    qca1 = QCA(student_id=student1.id, semester=1, qca_score=3.7)
+    qca2 = QCA(student_id=student2.id, semester=1, qca_score=3.9)
+    qca3 = QCA(student_id=student3.id, semester=1, qca_score=3.6)
+
+
+    db.session.add_all([qca1, qca2, qca3, qca4, qca5,
+        qca6, qca7, qca8, qca9, qca10])
 
     # companies data
-    companies = [
-        Company(name="Google", num_of_positions=2),
-        Company(name="Analog Devices", num_of_positions=3),
-        Company(name="Stripe", num_of_positions=2),
-        Company(name="Fidelity", num_of_positions=1),
-        Company(name="Kneat", num_of_positions=1),
-        Company(name="Provisio", num_of_positions=1),
-        Company(name="Apple", num_of_positions=3),
-        Company(name="CloudCards", num_of_positions=1),
-        Company(name="Fiserv", num_of_positions=1),
-        Company(name="Amazon", num_of_positions=3),
-        Company(name="Intercom", num_of_positions=2),
-        Company(name="DevEire", num_of_positions=1),
-        Company(name="Johnson&Johnson", num_of_positions=2),
-        Company(name="Dogpatch", num_of_positions=1),
-        Company(name="Kirby", num_of_positions=1),
-        Company(name="Patch", num_of_positions=1),
-        Company(name="BD", num_of_positions=1),
-        Company(name="Enterprise", num_of_positions=1),
-        Company(name="Payslip", num_of_positions=1),
-        Company(name="Shannonside Capital", num_of_positions=2),
-    ]
-    db.session.add_all(companies)
+    company1 = Company(name = "Google", num_of_positions = 2)
+    company2 = Company(name = "Analog Devices", num_of_positions = 3)
+    company3 = Company(name="Stripe", num_of_positions = 2)
+    company4 = Company(name="Fidelity", num_of_positions = 1)
+    company5 = Company(name="Kneat", num_of_positions= 1)
+    company6 = Company(name="Provisio", num_of_positions= 1)
+    company7 = Company(name="Apple", num_of_positions= 3)
+    company8 = Company(name="CloudCards", num_of_positions= 1)
+    company9 = Company(name="Fiserv", num_of_positions= 1)
+    company10 = Company(name="Amazon", num_of_positions= 3)
+    company11 = Company(name="Intercom", num_of_positions= 2)
+    company12 = Company(name="DevEire", num_of_positions= 1)
+
+    company14 = Company(name="Dogpatch", num_of_positions=1)
+    company15 = Company(name="Kirby", num_of_positions= 1)
+    company16 = Company(name="Patch", num_of_positions= 1)
+    company17 = Company(name="BD", num_of_positions=1)
+    company18 = Company(name="Enterprise", num_of_positions=1)
+    company19 = Company(name="Payslip", num_of_positions=1)
+    company20 = Company(name="Shannonside Capital", num_of_positions= 2)
+    db.session.add_all([company1, company2, company3, company4, company5, company6, company7, company8, company9, company10,
+        company11, company12, company13, company14, company15, company16, company17,
+        company18, company19, company20])
+
     db.session.commit()
-
-
 
     # Residency Positions
-    # residency1 = ResidencyPosition(company_id = company1.id, year = datetime.now().year,
-    #                                num_of_residencies = 2
-    #                                )
-    # residency2 = ResidencyPosition(company_id = company2.id, year = datetime.now().year,
-    #                                num_of_residencies = 1
-    #                                )
-    # db.session.add_all([residency1, residency2])
-
-   # preferences data
-   # pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
-   # pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
-   # pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
-   # pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
-   # db.session.add_all([pref1, pref2, pref3, pref4])
+    residency1 = ResidencyPosition(company_id = company1.id, year = datetime.now().year,
+                                   num_of_residencies = 2
+                                   )
+    residency2 = ResidencyPosition(company_id = company2.id, year = datetime.now().year,
+                                   num_of_residencies = 1
+                                   )
+    db.session.add_all([residency1, residency2])
 
 
-    #creating residencies
-    current_year = datetime.now().year
-    residency_1 = Residency(year=current_year)
-    residency_2 = Residency(year=current_year + 1)  # Next year residency
-
-    db.session.add_all([residency_1, residency_2])
-    db.session.commit()
-
-    # create ResidencyPositions for all companies in both residencies
-    for residency in [residency_1, residency_2]:
-        for company in companies:
-            rp = ResidencyPosition(
-                residency_id=residency.id,
-                company_id=company.id,
-                num_of_residencies=company.num_of_positions,
-                title = f"{company.name} Residency Position",
-                is_combined = False
-            )
-            db.session.add(rp)
-    db.session.commit()
-
-
-#initial preference ranking
-    all_students = [student1, student2, student3, student4, student5,
-                    student6, student7, student8, student9, student10]
-
-
-for student in all_students:
-    shuffled_companies = companies[:]
-    random.shuffle(shuffled_companies)
-    for rank, company in enumerate(shuffled_companies, start=1):
-        preference = Preference(
-            student_id = student.id,
-            company_id = company.id,
-            preference_rank = rank
-        )
-        db.session.add(preference)
+    # preferences data
+    pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
+    pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
+    pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
+    pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
+    db.session.add_all([pref1, pref2, pref3, pref4])
 
     db.session.commit()
     print("Data Inserted.")

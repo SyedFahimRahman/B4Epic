@@ -8,9 +8,10 @@
       <a href="{{ url_for('add_residency') }}" class="btn btn-success mt-3" style="font-size: 1.2em;"> Add Residency Position</a>
     {% endif %}
 
-    {% if session.get("role") == "student" and session.get("email") %}
-      <a href="{{ url_for('rank_residencies', year=student.year) }}" class="btn btn-primary mt-3" style="font-size: 1.2em;"> Rank Residency Positions</a>
-    {% endif %}
+    {% if session.get("role") == "student" and session.get("email") and student %}
+  <a href="{{ url_for('rank_residencies', year=student.year) }}" class="btn btn-primary mt-3">Rank Residency Positions</a>
+{% endif %}
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul class="flashes">

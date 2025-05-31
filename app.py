@@ -1,4 +1,3 @@
-import app
 from flask import Flask, redirect, url_for, render_template, session, flash, request
 from functools import wraps
 
@@ -37,15 +36,13 @@ def student_required(f):
     return decorated_function
 
 # ----------------- Public Routes -----------------
-from flask import session, render_template
-
 @app.route("/")
 def index():
     student = None
-    if session.get("role") == "student" and session.get("student"):
-        student = session.get("student")
+    if session.get("role") == "student" and session.get("student_id"):
+        from models import Student
+        student = Student.query.get(session["student_id"])
     return render_template("index.html", student=student)
-
 
 @app.route("/home")
 def home():
@@ -72,7 +69,6 @@ def login():
                 session["email"] = email
                 session["role"] = "admin"
                 return redirect(url_for("admin_panel"))
-
             elif user.role == "company":
                 if not user.is_approved:
                     flash("Your account is pending admin approval.")
@@ -80,45 +76,15 @@ def login():
                 session["email"] = email
                 session["role"] = "company"
                 session["company_id"] = user.id
-                return redirect(url_for("index"))
-
-            elif user.role == "student":
-                if not user.is_approved:
-                    flash("Your account is pending admin approval.")
-                    return render_template("login.html")
-                session["email"] = email
-                session["role"] = "student"
-                session["student_id"] = user.id
-
-                # Fetch the student record
-                student_obj = Student.query.get(user.id)
-                if student_obj:
-                    session["student"] = {
-                        "id": student_obj.id,
-                        "year": student_obj.year if hasattr(student_obj, 'year') else 2025,
-                        "first_name": student_obj.first_name,
-                        "last_name": student_obj.last_name
-                    }
-                else:
-                    # fallback if student not found
-                    session["student"] = {
-                        "id": user.id,
-                        "year": 2025,
-                        "first_name": "",
-                        "last_name": ""
-                    }
-
-                return redirect(url_for("index"))
-
+                return redirect(url_for("index"))  # or another company dashboard if you have one
             else:
-                # Other roles
                 if not user.is_approved:
                     flash("Your account is pending admin approval.")
                     return render_template("login.html")
                 session["email"] = email
                 session["role"] = user.role
+                session["student_id"] = user.id
                 return redirect(url_for("index"))
-
         flash("Invalid credentials.")
     return render_template("login.html")
 
@@ -148,9 +114,25 @@ def signup():
             new_user = None
 
             if role == "company":
-                company = Company(name=company_name)
+                line_1 = request.form.get("line_1")
+                line_2 = request.form.get("line_2")
+                town = request.form.get("town")
+                county = request.form.get("county")
+                eircode = request.form.get("eircode")
+
+                # Create address
+                address = Address(
+                    line_1=line_1,
+                    line_2=line_2,
+                    town=town,
+                    county=county,
+                    eircode=eircode
+                )
+                db.session.add(address)
+                db.session.flush()
+                company = Company(name=company_name, address_id = address.id)
                 db.session.add(company)
-                db.session.commit()
+                db.session.flush()
 
                 new_user = User(
                     username=email,
@@ -208,6 +190,7 @@ def logout():
     return redirect(url_for("index"))
 
 # ----------------- Admin Panel -----------------
+# Modify your admin_panel() view function:
 @app.route("/admin", methods=["GET", "POST"])
 def admin_panel():
     user = User.query.filter_by(username=session.get("email")).first()
@@ -217,41 +200,36 @@ def admin_panel():
 
     if request.method == "POST":
         action = request.form.get("action")
-        item_type = request.form.get("item_type")
+        user_email = request.form.get("user_email")
+        position_id = request.form.get("position_id")
 
-        if item_type == "user":
-            user_email = request.form.get("user_email")
+        if user_email:  # User approval logic
             pending_user = User.query.filter_by(username=user_email, is_approved=False).first()
-
             if pending_user:
                 if action == "approve":
                     pending_user.is_approved = True
                     db.session.commit()
-                    flash(f"Approved user: {user_email}")
+                    flash(f"Approved {user_email}")
                 elif action == "reject":
                     db.session.delete(pending_user)
                     db.session.commit()
-                    flash(f"Rejected user: {user_email}")
+                    flash(f"Rejected {user_email}")
 
-        elif item_type == "residency":
-            position_id = request.form.get("position_id")
-            position = ResidencyPosition.query.get(position_id)
-
-            if position and not position.is_approved:
+        elif position_id:  # Residency position approval logic
+            position = ResidencyPosition.query.get(int(position_id))
+            if position:
                 if action == "approve":
                     position.is_approved = True
                     db.session.commit()
-                    flash(f"Approved residency: {position.title}")
+                    flash(f"Approved position '{position.title}' from {position.company.name}")
                 elif action == "reject":
                     db.session.delete(position)
                     db.session.commit()
-                    flash(f"Rejected residency: {position.title}")
+                    flash(f"Rejected position '{position.title}'")
 
     pending_users = User.query.filter_by(is_approved=False).all()
     pending_positions = ResidencyPosition.query.filter_by(is_approved=False).all()
-
     return render_template("admin.html", pending_users=pending_users, pending_positions=pending_positions)
-
 
 # ----------------- Allocation Routes -----------------
 """@app.route('/run-allocation')
@@ -270,6 +248,7 @@ def view_assignments():
         company = Company.query.get(a.company_id)
         output.append(f"{student.first_name} {student.last_name} : {company.name}")
     return "<br>".join(output)
+
 
 @app.route("/company/add_residency", methods=["GET", "POST"])
 def add_residency():
@@ -292,9 +271,17 @@ def add_residency():
         # Residency position fields
         title = request.form.get("title")
         description = request.form.get("description")
-        num_of_residencies = request.form.get("num_of_residencies")
+
+        # Convert num_of_residencies to int
+        try:
+            num_of_residencies = int(request.form.get("num_of_residencies"))
+        except (TypeError, ValueError):
+            flash("Please enter a valid number for residencies.")
+            return redirect(url_for("add_residency"))
+
         residency_type = request.form.get("residency_type")  # dropdown value
         is_combined_str = request.form.get("is_combined")  # "true" or "false"
+        is_approved = False
 
         is_combined = True if is_combined_str == "true" else False
 
@@ -334,7 +321,8 @@ def add_residency():
             num_of_residencies=num_of_residencies,
             residency=residency_type,
             is_combined=is_combined,
-            company_id=company.id
+            company_id=company.id,
+            is_approved=False
         )
 
         db.session.add(new_position)
@@ -353,6 +341,7 @@ def add_residency():
         company_name=company.name,
         address=address
     )
+
 
 @app.route("/residencies")
 def list_residencies():
@@ -385,41 +374,42 @@ def list_residencies():
 
     return render_template("residency_list.html", residencies=residencies_data)
 
-
-@app.route("/student/rank_residencies", methods=["GET", "POST"])
+@app.route('/student/rank_residencies', methods=['GET', 'POST'])
+@student_required
 def rank_residencies():
-    student = session.get("student")
-    if not student:
-        flash("You need to log in as a student to access this page.")
-        return redirect(url_for("login"))
+    student_id = session.get('student_id')
+    positions = ResidencyPosition.query.all()
 
-    positions = (
-        db.session.query(ResidencyPosition, Company)
-        .join(Company, ResidencyPosition.company_id == Company.id)
-        .filter(ResidencyPosition.is_approved == True)  # Optional: only approved ones
-        .all()
-    )
+    if request.method == 'POST':
+        position_order_str = request.form.get('position_order', '')
+        if not position_order_str:
+            flash("Please rank the positions before submitting.")
+            return redirect(url_for('rank_residencies'))
 
-    # Format data to pass to template
-    positions_list = []
-    for position, company in positions:
-        positions_list.append({
-            "id": position.id,
-            "company_id": company.name,  # Or company.id if you prefer
-            "title": position.title,
-            "num_of_residencies": position.num_of_residencies
-        })
+        position_ids = position_order_str.split(',')
 
-    if request.method == "POST":
-        position_order = request.form.get("position_order")
-        if position_order:
-            flash("Your residency rankings have been saved!")
-            return redirect(url_for("rank_residencies"))
+        # Delete old rankings for this student
+        Ranking.query.filter_by(student_id=student_id).delete()
 
-    # Fix the year to 2025 here explicitly:
-    student['year'] = 2025
+        # Add new rankings
+        for rank, pos_id in enumerate(position_ids, start=1):
+            pos = ResidencyPosition.query.get(int(pos_id))
+            if pos is None:
+                continue
+            ranking = Ranking(
+                student_id=student_id,
+                residency_id=pos.id,
+                rank=rank
+            )
+            db.session.add(ranking)
 
-    return render_template("rank_residencies.html", positions=positions_list, student=student)
+        db.session.commit()
+        flash("Your rankings have been saved!")
+        return redirect(url_for('index'))
+
+    student = Student.query.get(student_id)
+    return render_template('rank_residencies.html', positions=positions, student=student)
+
 
 @app.route('/run-allocation', methods=["POST"])
 def run_allocate_students():
@@ -443,3 +433,7 @@ def allocation_results():
         return redirect(url_for("login"))
     allocations = get_allocation_details()
     return render_template("allocation_results.html", allocations=allocations)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
