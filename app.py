@@ -1,5 +1,8 @@
 from flask import Flask, redirect, url_for, render_template, session, flash, request
 from functools import wraps
+from flask import request, redirect, url_for, flash
+import csv
+from io import TextIOWrapper
 
 from allocation_results import get_allocation_details
 
@@ -199,6 +202,7 @@ def admin_panel():
         flash("Admin access only.")
         return redirect(url_for("login"))
 
+
     if request.method == "POST":
         action = request.form.get("action")
         user_email = request.form.get("user_email")
@@ -230,15 +234,16 @@ def admin_panel():
 
     pending_users = User.query.filter_by(is_approved=False).all()
     pending_positions = ResidencyPosition.query.filter_by(is_approved=False).all()
-    return render_template("admin.html", pending_users=pending_users, pending_positions=pending_positions)
-
-# ----------------- Allocation Routes -----------------
-"""@app.route('/run-allocation')
-def run_allocation_route():
-    result = run_allocation(round_number=1)
-    return result
-"""
-
+    students = Student.query.all()
+    companies = Company.query.all()
+    return render_template(
+        "admin.html",
+        pending_users=pending_users,
+        pending_positions=pending_positions,
+        students=students,
+        User=User,
+        companies=companies
+    )
 # ----------------- Company Assignments -----------------
 @app.route('/view-assignments')
 def view_assignments():
@@ -282,7 +287,8 @@ def add_residency():
         residency_type = request.form.get("residency_type")
         is_combined_str = request.form.get("is_combined")
         is_combined = True if is_combined_str == "true" else False
-        year = int(request.form.get("year"))  # <-- Get year from form
+        year = int(request.form.get("year"))
+        company.contact = request.form.get("contact")
 
         # Address fields from form
         line_1 = request.form.get("line_1")
@@ -319,8 +325,8 @@ def add_residency():
             residency=residency_type,
             is_combined=is_combined,
             company_id=company.id,
-            year=year,            # <-- Save year!
-            is_approved=False     # Default to not approved
+            year=year,
+            is_approved=False
         )
 
         db.session.add(new_position)
@@ -337,7 +343,8 @@ def add_residency():
     return render_template(
         "add_residency.html",
         company_name=company.name,
-        address=address
+        address=address,
+        company_username=user.username
     )
 
 
@@ -461,6 +468,52 @@ def allocation_results():
             return redirect(url_for("login"))
         allocations = get_allocation_details()
         return render_template("allocation_results.html", allocations=allocations)
+
+@app.route('/upload-students', methods=['POST'])
+def upload_students():
+    year = request.form.get('year', type=int)
+    if 'file' not in request.files:
+        flash('No file selected.')
+        return redirect(url_for('admin_panel'))
+
+    file = request.files['file']
+    if file.filename == '':
+        flash('No file selected.')
+        return redirect(url_for('admin_panel'))
+
+    if not file.filename.endswith('.csv'):
+        flash('Please upload a CSV file.')
+        return redirect(url_for('admin_panel'))
+
+    try:
+        csv_file = TextIOWrapper(file.stream, encoding='utf-8')
+        csv_reader = csv.DictReader(csv_file)
+        for index, row in enumerate(csv_reader):
+            # Use index as the grade/rank (smaller index = higher priority)
+            grade = float(index + 1)  # or (len(students) - index) if you want to invert
+            student = Student.query.filter_by(email=row['email']).first()
+            if student:
+                student.first_name = row['first_name']
+                student.last_name = row['last_name']
+                student.year = year
+                student.grade = grade  # or student.rank = index + 1
+            else:
+                student = Student(
+                    email=row['email'],
+                    first_name=row['first_name'],
+                    last_name=row['last_name'],
+                    year=year,
+                    grade=grade  # or rank = index + 1
+                )
+                db.session.add(student)
+        db.session.commit()
+        flash('Students uploaded and ranked!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}')
+
+    return redirect(url_for('admin_panel'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

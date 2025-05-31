@@ -1,40 +1,36 @@
-<!-- allocation_result.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Allocation Results</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #aaa; padding: 10px; text-align: left; }
-        th { background-color: #333; color: white; }
-        tr:nth-child(even) { background-color: #f4f4f4; }
-    </style>
-</head>
-<body>
-    <h1>Company Assignment Results</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Student Name</th>
-                <th>Residency ID</th>
-                <th>Company</th>
-                <th>Job Title</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for alloc in allocations %}
-                <tr>
-                    <td>{{ alloc.student_id }}</td>
-                    <td>{{ alloc.student_name }}</td>
-                    <td>{{ alloc.residency_id }}</td>
-                    <td>{{ alloc.company_name or 'N/A' }}</td>
-                    <td>{{ alloc.job_title or 'N/A' }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
+{% extends "base.html" %}
+{% block content %}
+  <h2 style="color:#2e7d32; margin-bottom: 24px;">Company Assignment Results</h2>
+  {% if allocations %}
+    <table style="
+      width: 100%;
+      border-collapse: collapse;
+      background: #e8f5e9;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(46,125,50,0.07);">
+      <thead>
+        <tr style="background: #388e3c; color: #fff;">
+          <th style="padding: 12px;">Student ID</th>
+          <th style="padding: 12px;">Student Name</th>
+          <th style="padding: 12px;">Residency ID</th>
+          <th style="padding: 12px;">Company</th>
+          <th style="padding: 12px;">Job Title</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alloc in allocations %}
+        <tr style="border-bottom: 1px solid #c8e6c9;">
+          <td style="padding: 12px;">{{ alloc.student_id }}</td>
+          <td style="padding: 12px;">{{ alloc.student_name }}</td>
+          <td style="padding: 12px;">{{ alloc.residency_id }}</td>
+          <td style="padding: 12px;">{{ alloc.company_name or 'N/A' }}</td>
+          <td style="padding: 12px;">{{ alloc.job_title or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-</body>
-</html>
+  {% else %}
+    <div style="color: #388e3c; font-size: 1.2em;">No assignments available yet.</div>
+  {% endif %}
+{% endblock %}

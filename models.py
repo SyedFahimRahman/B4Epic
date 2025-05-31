@@ -48,7 +48,6 @@ class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     contact = db.Column(db.String(100))
-
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     address = db.relationship('Address', backref='companies', lazy=True)
 
