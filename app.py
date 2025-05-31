@@ -233,6 +233,7 @@ def view_assignments():
         output.append(f"{student.first_name} {student.last_name} : {company.name}")
     return "<br>".join(output)
 
+
 @app.route("/company/add_residency", methods=["GET", "POST"])
 def add_residency():
     # Check if user is logged in and is an approved company
@@ -254,9 +255,17 @@ def add_residency():
         # Residency position fields
         title = request.form.get("title")
         description = request.form.get("description")
-        num_of_residencies = request.form.get("num_of_residencies")
+
+        # Convert num_of_residencies to int
+        try:
+            num_of_residencies = int(request.form.get("num_of_residencies"))
+        except (TypeError, ValueError):
+            flash("Please enter a valid number for residencies.")
+            return redirect(url_for("add_residency"))
+
         residency_type = request.form.get("residency_type")  # dropdown value
         is_combined_str = request.form.get("is_combined")  # "true" or "false"
+        is_approved = False
 
         is_combined = True if is_combined_str == "true" else False
 
@@ -296,7 +305,8 @@ def add_residency():
             num_of_residencies=num_of_residencies,
             residency=residency_type,
             is_combined=is_combined,
-            company_id=company.id
+            company_id=company.id,
+            is_approved=False
         )
 
         db.session.add(new_position)
@@ -315,6 +325,7 @@ def add_residency():
         company_name=company.name,
         address=address
     )
+
 
 @app.route("/residencies")
 def list_residencies():
