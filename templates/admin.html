@@ -13,9 +13,9 @@
       {% with messages = get_flashed_messages() %}
         {% if messages %}
           <ul class="flash-messages">
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
           </ul>
         {% endif %}
       {% endwith %}
@@ -31,21 +31,21 @@
           </thead>
           <tbody>
             {% for user in pending_users %}
-<tr>
-  <td>{{ user.username }}</td>  {# Use username, not email #}
-  <td>{{ user.role }}</td>
-  <td>
-    <form method="POST" style="display:inline; margin-right: 10px;">
-      <input type="hidden" name="user_email" value="{{ user.username }}">
-      <button type="submit" name="action" value="approve">Approve</button>
-    </form>
-    <form method="POST" style="display:inline;">
-      <input type="hidden" name="user_email" value="{{ user.username }}">
-      <button type="submit" name="action" value="reject">Reject</button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
+              <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <form method="POST" style="display:inline; margin-right: 10px;">
+                    <input type="hidden" name="user_email" value="{{ user.username }}">
+                    <button type="submit" name="action" value="approve">Approve</button>
+                  </form>
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="user_email" value="{{ user.username }}">
+                    <button type="submit" name="action" value="reject">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
           </tbody>
         </table>
       {% else %}
@@ -54,4 +54,25 @@
     </div>
   </div>
 </div>
+
+<div style="margin-top: 20px;">
+  <form id="run-allocation-form" method="POST">
+    <select id="year-select" required>
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Run Allocation</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('run-allocation-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const year = document.getElementById('year-select').value;
+  window.location.href = `/run-allocation/${year}`;
+});
+</script>
+
 {% endblock %}

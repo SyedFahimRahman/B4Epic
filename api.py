@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models import Company, ResidencyPosition, Preference, Student
+from models import Company, ResidencyPosition, Student
 from extensions import db
 
 api_bp = Blueprint('api' , __name__)        #creates a group of api routes & this blueprint will be registered later in app.py
