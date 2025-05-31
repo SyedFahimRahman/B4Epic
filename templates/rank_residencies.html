@@ -4,49 +4,87 @@
 
 {% block content %}
 <style>
-    #positionsList { list-style: none; padding: 0; }
+    body { background: #f9fff9; }
+    #positionsList { list-style: none; padding: 0; max-width: 800px; margin: 0 auto; }
     #positionsList li {
-        margin: 8px 0;
-        padding: 12px;
-        background: #f0f0f0;
-        border: 1px solid #ccc;
+        margin: 10px 0;
+        padding: 16px;
+        background: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 10px;
         cursor: move;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: background 0.2s;
+    }
+    #positionsList li:hover {
+        background: #dcedc8;
     }
     .flashes {
         list-style: none;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #4caf50;
-        background-color: #dff0d8;
-        color: #3c763d;
-        border-radius: 5px;
+        padding: 12px 20px;
+        margin: 0 auto 20px;
+        border: 1px solid #66bb6a;
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border-radius: 10px;
+        max-width: 800px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .flashes li {
+        padding: 4px 0;
+    }
+    h2 {
+        color: #2e7d32;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    button {
+        display: block;
+        margin: 20px auto 0;
+        padding: 12px 24px;
+        background: #4caf50;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    button:hover {
+        background: #388e3c;
+    }
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
     }
 </style>
 
-<h2>Rank Residency Positions</h2>
-    <h2>Rank Residencies (Year {{ student.year }})</h2>
+<div class="container">
+    <h2>Rank Year {{ student.year }} Residency Positions</h2>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
 
-<form method="post" id="rankForm">
-    <ul id="positionsList">
-        {% for pos in positions %}
-        <li data-id="{{ pos.id }}">
-            Company: {{ pos.company_name}}, Job Title: {{ pos.title }}, Slots: {{ pos.num_of_residencies }}
-        </li>
-        {% endfor %}
-    </ul>
-    <input type="hidden" name="position_order" id="positionOrder">
-    <button type="submit">Save Rankings</button>
-</form>
+    <form method="post" id="rankForm">
+        <ul id="positionsList">
+            {% for pos in positions %}
+            <li data-id="{{ pos.id }}">
+                Company: {{ pos.company.name }}, Job Title: {{ pos.title }}, Slots: {{ pos.num_of_residencies}}
+            </li>
+            {% endfor %}
+        </ul>
+        <input type="hidden" name="position_order" id="positionOrder">
+        <button type="submit">Save Rankings</button>
+    </form>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
