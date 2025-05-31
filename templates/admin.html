@@ -1,79 +1,78 @@
 {% extends "base.html" %}
 
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="admin-panel" style="display: flex; gap: 40px; justify-content: space-between;">
+<div class="admin-wrapper">
+  <div class="glass-container">
+    <div class="admin-box">
+      <h2>Admin Panel - Pending User Approvals</h2>
 
-  <!-- Pending Users -->
-  <div style="width: 45%;">
-    <h2>Pending User Approvals</h2>
-    {% if pending_users %}
-      <table>
-        <thead>
-          <tr><th>Email</th><th>Role</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {% for user in pending_users %}
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flash-messages">
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      {% if pending_users %}
+        <table>
+          <thead>
             <tr>
-              <td>{{ user.username }}</td>
-              <td>{{ user.role }}</td>
-              <td>
-                <form method="POST" style="display:inline;">
-                  <input type="hidden" name="user_email" value="{{ user.username }}">
-                  <input type="hidden" name="item_type" value="user">
-                  <button type="submit" name="action" value="approve">Approve</button>
-                  <button type="submit" name="action" value="reject">Reject</button>
-                </form>
-              </td>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>No pending users.</p>
-    {% endif %}
+          </thead>
+          <tbody>
+            {% for user in pending_users %}
+              <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <form method="POST" style="display:inline; margin-right: 10px;">
+                    <input type="hidden" name="user_email" value="{{ user.username }}">
+                    <button type="submit" name="action" value="approve">Approve</button>
+                  </form>
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="user_email" value="{{ user.username }}">
+                    <button type="submit" name="action" value="reject">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No users pending approval.</p>
+      {% endif %}
+    </div>
   </div>
-
-  <!-- Pending Residencies -->
-  <div style="width: 45%;">
-    <h2>Pending Residency Postings</h2>
-    {% if pending_positions %}
-      <table>
-        <thead>
-          <tr><th>Title</th><th>Company</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {% for position in pending_positions %}
-            <tr>
-              <td>{{ position.title }}</td>
-              <td>{{ position.company.name }}</td>
-              <td>
-                <form method="POST" style="display:inline;">
-                  <input type="hidden" name="position_id" value="{{ position.id }}">
-                  <input type="hidden" name="item_type" value="residency">
-                  <button type="submit" name="action" value="approve">Approve</button>
-                  <button type="submit" name="action" value="reject">Reject</button>
-                </form>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>No pending residencies.</p>
-    {% endif %}
-  </div>
-
 </div>
 
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flash-messages">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+<div style="margin-top: 20px;">
+  <form id="run-allocation-form" method="POST">
+    <select id="year-select" required>
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Run Allocation</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('run-allocation-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const year = document.getElementById('year-select').value;
+  window.location.href = `/run-allocation/${year}`;
+});
+</script>
 
 {% endblock %}
