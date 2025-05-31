@@ -7,6 +7,7 @@ class User(db.Model):
     role = db.Column(db.String(20))
     is_approved = db.Column(db.Boolean, default=False)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=True)
+
     company = db.relationship('Company', backref='users', lazy=True)
 
 
@@ -47,6 +48,7 @@ class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     contact = db.Column(db.String(100))
+
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     address = db.relationship('Address', backref='companies', lazy=True)
 
