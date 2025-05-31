@@ -1,22 +1,11 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, ResidencyPosition, Preference
+from models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
 from datetime import datetime
-import random
 
 with app.app_context():
     db.drop_all()
     db.create_all()
-    
-    """admin = User(
-    username="admin@admin.com",
-    password="admin",  # Use a hashed password in production!
-    role="admin",
-    is_approved=True
-    )
-    db.session.add(admin)
-    db.session.commit()
-    """
 
     # creating users
     user1 = User(username = "waleed.ahmad", password = "w1234", role = "student")
@@ -29,12 +18,7 @@ with app.app_context():
     user8 = User(username="ciaran.lynch", password="c1234", role="student")
     user9 = User(username="sebastian.kimmel", password="s1234", role="student")
     user10 = User(username="timothy.lazo", password="t1234", role="student")
-    user11 = User(username="john.doe", password="j1234", role="company")
-    user12 = User(username="jane.smith", password="j1234", role="company")
-    user13 = User(username="company1", password="c1234", role="company")
-    user14 = User(username="company2", password="c1234", role="company")
-    
-    db.session.add_all([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14])
+    db.session.add_all([user1, user2, user3, user4, user5, user6, user7, user8, user9, user10])
     db.session.flush() #to get IDs
 
     # creating students
@@ -55,13 +39,7 @@ with app.app_context():
     qca1 = QCA(student_id=student1.id, semester=1, qca_score=3.7)
     qca2 = QCA(student_id=student2.id, semester=1, qca_score=3.9)
     qca3 = QCA(student_id=student3.id, semester=1, qca_score=3.6)
-    qca4 = QCA(student_id=student4.id, semester=1, qca_score=3.5)
-    qca5 = QCA(student_id=student5.id, semester=1, qca_score=3.4)
-    qca6 = QCA(student_id=student6.id, semester=1, qca_score=3.3)
-    qca7 = QCA(student_id=student7.id, semester=1, qca_score=3.2)
-    qca8 = QCA(student_id=student8.id, semester=1, qca_score=3.1)
-    qca9 = QCA(student_id=student9.id, semester=1, qca_score=3.0)
-    qca10 = QCA(student_id=student10.id, semester=1, qca_score=2.9)
+
 
     db.session.add_all([qca1, qca2, qca3, qca4, qca5,
         qca6, qca7, qca8, qca9, qca10])
@@ -79,7 +57,7 @@ with app.app_context():
     company10 = Company(name="Amazon", num_of_positions= 3)
     company11 = Company(name="Intercom", num_of_positions= 2)
     company12 = Company(name="DevEire", num_of_positions= 1)
-    company13 = Company(name="Johnson&johnson", num_of_positions= 2)
+
     company14 = Company(name="Dogpatch", num_of_positions=1)
     company15 = Company(name="Kirby", num_of_positions= 1)
     company16 = Company(name="Patch", num_of_positions= 1)
@@ -103,29 +81,12 @@ with app.app_context():
     db.session.add_all([residency1, residency2])
 
 
-   # preferences data
-   # pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
-   # pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
-   # pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
-   # pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
-   # db.session.add_all([pref1, pref2, pref3, pref4])
+    # preferences data
+    pref1 = Preference(student_id = student1.id, company_id = company1.id, preference_rank = 1)
+    pref2 = Preference(student_id = student1.id, company_id = company2.id, preference_rank = 2)
+    pref3 = Preference(student_id = student2.id, company_id = company2.id, preference_rank = 1)
+    pref4 = Preference(student_id = student2.id, company_id = company1.id, preference_rank = 2)
+    db.session.add_all([pref1, pref2, pref3, pref4])
 
-#initial preference ranking
-    all_students = [student1, student2, student3, student4, student5,
-                    student6, student7, student8, student9, student10]
-    all_companies = [company1, company2, company3, company4, company5, company6, company7, company8, company9, company10,
-                     company11, company12, company13, company14, company15, company16, company17, company18, company19, company20]
-
-for student in all_students:
-    shuffled_companies = all_companies[:]
-    random.shuffle(shuffled_companies)
-    for rank, company in enumerate(shuffled_companies, start=1):
-        preference = Preference(
-            student_id = student.id,
-            company_id = company.id,
-            preference_rank = rank
-        )
-        db.session.add(preference)
-
-db.session.commit()
-print("Data Inserted.")
+    db.session.commit()
+    print("Data Inserted.")

@@ -2,56 +2,134 @@
 
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <style>
+    .admin-columns {
+      display: flex;
+      gap: 40px;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .admin-section {
+      flex: 1;
+      min-width: 400px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    .flash-messages {
+      list-style: none;
+      padding-left: 0;
+      color: red;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="admin-wrapper">
   <div class="glass-container">
-    <div class="admin-box">
-      <h2>Admin Panel - Pending User Approvals</h2>
+    <h2>Admin Panel</h2>
 
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <ul class="flash-messages">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flash-messages">
           {% for message in messages %}
             <li>{{ message }}</li>
           {% endfor %}
-          </ul>
-        {% endif %}
-      {% endwith %}
-
-      {% if pending_users %}
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for user in pending_users %}
-<tr>
-  <td>{{ user.username }}</td>  {# Use username, not email #}
-  <td>{{ user.role }}</td>
-  <td>
-    <form method="POST" style="display:inline; margin-right: 10px;">
-      <input type="hidden" name="user_email" value="{{ user.username }}">
-      <button type="submit" name="action" value="approve">Approve</button>
-    </form>
-    <form method="POST" style="display:inline;">
-      <input type="hidden" name="user_email" value="{{ user.username }}">
-      <button type="submit" name="action" value="reject">Reject</button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p>No users pending approval.</p>
+        </ul>
       {% endif %}
+    {% endwith %}
+
+    <div class="admin-columns">
+      <!-- Pending Users -->
+      <div class="admin-section">
+        <h3>Pending Users</h3>
+        {% if pending_users %}
+          <table>
+            <thead>
+              <tr><th>Email</th><th>Role</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {% for user in pending_users %}
+                <tr>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.role }}</td>
+                  <td>
+                    <form method="POST" style="display:inline;">
+                      <input type="hidden" name="user_email" value="{{ user.username }}">
+                      <button type="submit" name="action" value="approve">Approve</button>
+                    </form>
+                    <form method="POST" style="display:inline;">
+                      <input type="hidden" name="user_email" value="{{ user.username }}">
+                      <button type="submit" name="action" value="reject">Reject</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>No users pending approval.</p>
+        {% endif %}
+      </div>
+
+      <!-- Pending Residency Positions -->
+      <div class="admin-section">
+        <h3>Pending Residency Positions</h3>
+        {% if pending_positions %}
+          <table>
+            <thead>
+              <tr><th>Title</th><th>Company</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {% for pos in pending_positions %}
+                <tr>
+                  <td>{{ pos.title }}</td>
+                  <td>{{ pos.company.name }}</td>
+                  <td>
+                    <form method="POST" style="display:inline;">
+                      <input type="hidden" name="position_id" value="{{ pos.id }}">
+                      <button type="submit" name="action" value="approve">Approve</button>
+                    </form>
+                    <form method="POST" style="display:inline;">
+                      <input type="hidden" name="position_id" value="{{ pos.id }}">
+                      <button type="submit" name="action" value="reject">Reject</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>No residency positions pending approval.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Run Allocation Button -->
+<div style="margin-top: 40px;">
+  <form id="run-allocation-form" method="POST">
+    <select id="year-select" required>
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Run Allocation</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('run-allocation-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const year = document.getElementById('year-select').value;
+  window.location.href = `/run-allocation/${year}`;
+});
+</script>
 {% endblock %}
