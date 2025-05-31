@@ -112,6 +112,66 @@
   </div>
 </div>
 
+    <button id="show-students" class="admin-button">View All Students</button>
+<button id="show-companies" class="admin-button">View All Companies</button>
+
+<!-- Student Table (hidden by default) -->
+<div id="student-table" style="display: none;">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Year</th>
+        <th>Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      {% set user = User.query.get(student.id) %}
+      <tr>
+        <td>{{ student.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ student.first_name }}</td>
+        <td>{{ student.last_name }}</td>
+        <td>{{ student.year }}</td>
+        <td>{{ student.grade }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Company Table (hidden by default) -->
+<div id="company-table" style="display: none;">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+          <th>Phone No.</th>
+            <th>Email</th>
+        <!-- Add other columns if needed -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for company in companies %}
+       {% set user = User.query.filter_by(company_id=company.id).first() %}
+      <tr>
+        <td>{{ company.id }}</td>
+        <td>{{ company.name }}</td>
+          <td>{{ company.contact }}</td>
+            <td>{{ user.username}}</td>
+
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 <!-- Run Allocation Button -->
 <form action="/run-allocation" method="POST">
   <select name="year" required>
@@ -120,8 +180,21 @@
     <option value="3">Year 3</option>
     <option value="4">Year 4</option>
   </select>
+
+    <form method="POST" enctype="multipart/form-data" action="/upload">
+  <input type="file" name="file" accept=".csv" required>
   <button type="submit">Run Allocation</button>
 </form>
 
+<script>
+  document.getElementById('show-students').addEventListener('click', function() {
+    document.getElementById('student-table').style.display = 'block';
+    document.getElementById('company-table').style.display = 'none';
+  });
+  document.getElementById('show-companies').addEventListener('click', function() {
+    document.getElementById('company-table').style.display = 'block';
+    document.getElementById('student-table').style.display = 'none';
+  });
+</script>
 
 {% endblock %}
