@@ -404,7 +404,7 @@ def rank_residencies(year):
         position_order_str = request.form.get('position_order', '')
         if not position_order_str:
             flash("Please rank the positions before submitting.")
-            return redirect(url_for('rank_residencies',year=year))
+            return redirect(url_for('rank_residencies', year=year))
 
         position_ids = position_order_str.split(',')
 
@@ -427,7 +427,9 @@ def rank_residencies(year):
         flash("Your rankings have been saved!")
         return redirect(url_for('index'))
 
+    # Render the template with the correct positions and student
     return render_template('rank_residencies.html', positions=positions, student=student)
+
 @app.route('/student/view_rankings')
 @student_required
 def view_rankings():
