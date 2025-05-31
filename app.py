@@ -190,6 +190,7 @@ def logout():
     return redirect(url_for("index"))
 
 # ----------------- Admin Panel -----------------
+# Modify your admin_panel() view function:
 @app.route("/admin", methods=["GET", "POST"])
 def admin_panel():
     user = User.query.filter_by(username=session.get("email")).first()
@@ -200,20 +201,35 @@ def admin_panel():
     if request.method == "POST":
         action = request.form.get("action")
         user_email = request.form.get("user_email")
-        pending_user = User.query.filter_by(username=user_email, is_approved=False).first()
+        position_id = request.form.get("position_id")
 
-        if pending_user:
-            if action == "approve":
-                pending_user.is_approved = True
-                db.session.commit()
-                flash(f"Approved {user_email}")
-            elif action == "reject":
-                db.session.delete(pending_user)
-                db.session.commit()
-                flash(f"Rejected {user_email}")
+        if user_email:  # User approval logic
+            pending_user = User.query.filter_by(username=user_email, is_approved=False).first()
+            if pending_user:
+                if action == "approve":
+                    pending_user.is_approved = True
+                    db.session.commit()
+                    flash(f"Approved {user_email}")
+                elif action == "reject":
+                    db.session.delete(pending_user)
+                    db.session.commit()
+                    flash(f"Rejected {user_email}")
+
+        elif position_id:  # Residency position approval logic
+            position = ResidencyPosition.query.get(int(position_id))
+            if position:
+                if action == "approve":
+                    position.is_approved = True
+                    db.session.commit()
+                    flash(f"Approved position '{position.title}' from {position.company.name}")
+                elif action == "reject":
+                    db.session.delete(position)
+                    db.session.commit()
+                    flash(f"Rejected position '{position.title}'")
 
     pending_users = User.query.filter_by(is_approved=False).all()
-    return render_template("admin.html", pending_users=pending_users)
+    pending_positions = ResidencyPosition.query.filter_by(is_approved=False).all()
+    return render_template("admin.html", pending_users=pending_users, pending_positions=pending_positions)
 
 # ----------------- Allocation Routes -----------------
 """@app.route('/run-allocation')
