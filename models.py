@@ -91,7 +91,7 @@ class ResidencyPosition(db.Model):
     is_approved = db.Column(db.Boolean, default=False)
     company = db.relationship('Company', backref='residency_positions', lazy=True)
     salary= db.Column(db.Float)
-
+    year = db.Column(db.Integer, nullable=False)
 
 class CompanyAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
