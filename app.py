@@ -148,6 +148,7 @@ def signup():
                 first_name = request.form.get("first_name")
                 last_name = request.form.get("last_name")
                 phone_no = request.form.get("phone_no")
+                year =  request.form.get("year")
 
                 new_user = User(
                     username=email,
@@ -163,6 +164,7 @@ def signup():
                     first_name=first_name,
                     last_name=last_name,
                     phone_no=phone_no,
+                    year=year,
                     address_id=None  # You can modify this if you collect address info
                 )
                 db.session.add(new_student)
@@ -272,18 +274,16 @@ def add_residency():
         title = request.form.get("title")
         description = request.form.get("description")
 
-        # Convert num_of_residencies to int
         try:
             num_of_residencies = int(request.form.get("num_of_residencies"))
         except (TypeError, ValueError):
             flash("Please enter a valid number for residencies.")
             return redirect(url_for("add_residency"))
 
-        residency_type = request.form.get("residency_type")  # dropdown value
-        is_combined_str = request.form.get("is_combined")  # "true" or "false"
-        is_approved = False
-
+        residency_type = request.form.get("residency_type")
+        is_combined_str = request.form.get("is_combined")
         is_combined = True if is_combined_str == "true" else False
+        year = int(request.form.get("year"))  # <-- Get year from form
 
         # Address fields from form
         line_1 = request.form.get("line_1")
@@ -294,7 +294,6 @@ def add_residency():
 
         # Update or create company address
         if company.address_id:
-            # Existing address - update it
             address = Address.query.get(company.address_id)
             address.line_1 = line_1
             address.line_2 = line_2
@@ -302,7 +301,6 @@ def add_residency():
             address.county = county
             address.eircode = eircode
         else:
-            # No address yet - create one
             address = Address(
                 line_1=line_1,
                 line_2=line_2,
@@ -311,10 +309,10 @@ def add_residency():
                 eircode=eircode
             )
             db.session.add(address)
-            db.session.flush()  # flush to get the address id before commit
+            db.session.flush()
             company.address_id = address.id
 
-        # Add the new residency position
+        # Create and save the new residency position
         new_position = ResidencyPosition(
             title=title,
             description=description,
@@ -322,7 +320,8 @@ def add_residency():
             residency=residency_type,
             is_combined=is_combined,
             company_id=company.id,
-            is_approved=False
+            year=year,            # <-- Save year!
+            is_approved=False     # Default to not approved
         )
 
         db.session.add(new_position)
@@ -378,7 +377,13 @@ def list_residencies():
 @student_required
 def rank_residencies():
     student_id = session.get('student_id')
-    positions = ResidencyPosition.query.all()
+    student = Student.query.get(student_id)
+    if not student:
+        flash("Student not found.")
+        return redirect(url_for('index'))
+
+    # Only show positions for the student's year
+    positions = ResidencyPosition.query.filter_by(year=student.year).all()
 
     if request.method == 'POST':
         position_order_str = request.form.get('position_order', '')
@@ -407,7 +412,6 @@ def rank_residencies():
         flash("Your rankings have been saved!")
         return redirect(url_for('index'))
 
-    student = Student.query.get(student_id)
     return render_template('rank_residencies.html', positions=positions, student=student)
 
 
