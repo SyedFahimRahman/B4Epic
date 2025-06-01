@@ -21,11 +21,7 @@
       padding: 8px 10px;
       border-bottom: 1px solid #ccc;
     }
-    .flash-messages {
-      list-style: none;
-      padding-left: 0;
-      color: red;
-    }
+
   </style>
 {% endblock %}
 
@@ -109,82 +105,124 @@
         {% endif %}
       </div>
     </div>
+
+    <hr>
+
+    <!-- Separate forms for upload and run allocation -->
+    <h3>Student-Residency Matching</h3>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_students') }}">
+      <label for="upload-year">Select Year:</label>
+      <select name="year" id="upload-year" required>
+        <option value="" disabled selected>Select year</option>
+        <option value="1">Year 1</option>
+        <option value="2">Year 2</option>
+        <option value="3">Year 3</option>
+        <option value="4">Year 4</option>
+      </select>
+
+      <br><br>
+
+      <label for="student-csv">Upload CSV:</label>
+      <input type="file" name="file" id="student-csv" accept=".csv" required>
+
+      <br><br>
+
+      <button type="submit">Upload Students</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('run_allocate_students') }}" style="margin-top: 20px;">
+      <label for="allocation-year">Select Year for Allocation:</label>
+      <select name="year" id="allocation-year" required>
+        <option value="1">Year 1</option>
+        <option value="2">Year 2</option>
+        <option value="3">Year 3</option>
+        <option value="4">Year 4</option>
+      </select>
+      <button type="submit" class="admin-button">Run Allocations</button>
+    </form>
+
+    <hr>
+
+    <!-- View All Buttons -->
+    <button id="show-students" class="admin-button">View All Students</button>
+    <button id="show-companies" class="admin-button">View All Companies</button>
+
+    <!-- Student Table (hidden by default) -->
+    <div id="student-table" style="display: none;">
+      <h3>All Students</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Year</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if students_with_users %}
+            {% for student, user in students_with_users %}
+            <tr>
+              <td>{{ student.id }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ student.first_name }}</td>
+              <td>{{ student.last_name }}</td>
+              <td>{{ student.year }}</td>
+              <td>{{ student.grade if student.grade else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+          {% elif students %}
+            {% for student in students %}
+            <tr>
+              <td>{{ student.id }}</td>
+              <td>
+                {% set user = User.query.get(student.id) %}
+                {{ user.username if user else 'N/A' }}
+              </td>
+              <td>{{ student.first_name }}</td>
+              <td>{{ student.last_name }}</td>
+              <td>{{ student.year }}</td>
+              <td>{{ student.grade if student.grade else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="6">No students found</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Company Table (hidden by default) -->
+    <div id="company-table" style="display: none;">
+      <h3>All Companies</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for company in companies %}
+          <tr>
+            <td>{{ company.id }}</td>
+            <td>{{ company.name }}</td>
+            <td>{{ company.contact if company.contact else 'N/A' }}</td>
+            <td>
+              {% set company_user = User.query.filter_by(company_id=company.id).first() %}
+              {{ company_user.username if company_user else 'N/A' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
-
-    <button id="show-students" class="admin-button">View All Students</button>
-<button id="show-companies" class="admin-button">View All Companies</button>
-
-<!-- Student Table (hidden by default) -->
-<div id="student-table" style="display: none;">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Email</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Year</th>
-        <th>Grade</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for student in students %}
-      {% set user = User.query.get(student.id) %}
-      <tr>
-        <td>{{ student.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>{{ student.first_name }}</td>
-        <td>{{ student.last_name }}</td>
-        <td>{{ student.year }}</td>
-        <td>{{ student.grade }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<!-- Company Table (hidden by default) -->
-<div id="company-table" style="display: none;">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-          <th>Phone No.</th>
-            <th>Email</th>
-        <!-- Add other columns if needed -->
-      </tr>
-    </thead>
-    <tbody>
-      {% for company in companies %}
-       {% set user = User.query.filter_by(company_id=company.id).first() %}
-      <tr>
-        <td>{{ company.id }}</td>
-        <td>{{ company.name }}</td>
-          <td>{{ company.contact }}</td>
-            <td>{{ user.username}}</td>
-
-
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<!-- Run Allocation Button -->
-<form action="/run-allocation" method="POST">
-  <select name="year" required>
-    <option value="1">Year 1</option>
-    <option value="2">Year 2</option>
-    <option value="3">Year 3</option>
-    <option value="4">Year 4</option>
-  </select>
-
-    <form method="POST" enctype="multipart/form-data" action="/upload">
-  <input type="file" name="file" accept=".csv" required>
-  <button type="submit">Run Allocation</button>
-</form>
 
 <script>
   document.getElementById('show-students').addEventListener('click', function() {
@@ -196,5 +234,4 @@
     document.getElementById('student-table').style.display = 'none';
   });
 </script>
-
 {% endblock %}

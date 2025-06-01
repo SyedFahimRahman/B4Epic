@@ -11,6 +11,7 @@ from flask_migrate import Migrate
 from config import Config
 from allocation_results import allocate_students, get_allocation_details
 from api import api_bp
+from sqlalchemy import func
 
 
 # Blueprints (optional modular organization)
@@ -196,12 +197,13 @@ def logout():
 # ----------------- Admin Panel -----------------
 # Modify your admin_panel() view function:
 @app.route("/admin", methods=["GET", "POST"])
+@app.route("/admin", methods=["GET", "POST"])
 def admin_panel():
+    # Check if user is admin first
     user = User.query.filter_by(username=session.get("email")).first()
     if not user or user.role != "admin":
         flash("Admin access only.")
         return redirect(url_for("login"))
-
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -232,17 +234,29 @@ def admin_panel():
                     db.session.commit()
                     flash(f"Rejected position '{position.title}'")
 
+    # Get all data for the admin panel
     pending_users = User.query.filter_by(is_approved=False).all()
     pending_positions = ResidencyPosition.query.filter_by(is_approved=False).all()
+
+    # Try to get students with their associated user data using proper join
+    try:
+        students_with_users = db.session.query(Student, User).join(User, Student.id == User.id).all()
+    except Exception as e:
+        print(f"Error joining students with users: {e}")
+        students_with_users = None
+
+    # Fallback: get students separately if join fails
     students = Student.query.all()
     companies = Company.query.all()
+
     return render_template(
         "admin.html",
         pending_users=pending_users,
         pending_positions=pending_positions,
-        students=students,
-        User=User,
-        companies=companies
+        students_with_users=students_with_users,  # Pass the joined data (might be None)
+        students=students,  # Fallback data
+        companies=companies,
+        User=User
     )
 # ----------------- Company Assignments -----------------
 @app.route('/view-assignments')
@@ -445,6 +459,133 @@ def view_rankings():
     )
     return render_template('view_rankings.html', rankings=rankings)
 
+
+@app.route('/upload-students', methods=['POST'])
+def upload_students():
+    year = request.form.get('year', type=int)
+    if not year:
+        flash("Year is required.")
+        return redirect(url_for('admin_panel'))
+
+    file = request.files.get('file')
+    if not file or file.filename == '':
+        flash("No file selected.")
+        return redirect(url_for('admin_panel'))
+
+    if not file.filename.lower().endswith('.csv'):
+        flash("Only CSV files are allowed.")
+        return redirect(url_for('admin_panel'))
+
+    try:
+        # Read the CSV file
+        csv_file = TextIOWrapper(file.stream, encoding='utf-8-sig')
+        reader = csv.DictReader(csv_file)
+
+        # Debug: Print headers
+        print("CSV Headers:", reader.fieldnames)
+
+        # Track updates and creations
+        updated_count = 0
+        created_count = 0
+        error_count = 0
+
+        for row in reader:
+            try:
+                first_name = row.get('first_name', '').strip()
+                last_name = row.get('last_name', '').strip()
+                grade_str = row.get('grade', '').strip()
+                email = row.get('email', '').strip() or f"{first_name.lower()}.{last_name.lower()}@example.com"
+
+                # Debug: Print current row data
+                print(f"Processing row {reader.line_num}: {first_name} {last_name}, grade: '{grade_str}'")
+
+                if not first_name or not last_name:
+                    print(f"Row {reader.line_num}: Missing first or last name. Skipped.")
+                    error_count += 1
+                    continue
+
+                # Handle grade conversion more carefully
+                grade = None
+                if grade_str:
+                    try:
+                        grade = float(grade_str)  # Use float to handle decimal grades
+                        if grade < 0 or grade > 100:
+                            print(f"Row {reader.line_num}: Grade {grade} out of range. Skipped.")
+                            error_count += 1
+                            continue
+                    except ValueError:
+                        print(f"Row {reader.line_num}: Invalid grade '{grade_str}'. Skipped.")
+                        error_count += 1
+                        continue
+
+                # Find existing student - FIXED QUERY
+                student = db.session.query(Student).join(User, Student.id == User.id).filter(
+                    func.lower(Student.first_name) == func.lower(first_name),
+                    func.lower(Student.last_name) == func.lower(last_name),
+                    Student.year == year
+                ).first()
+
+                if student:
+                    # Update existing student
+                    print(f"Found existing student: {student.first_name} {student.last_name}")
+                    print(f"Current grade: {student.grade}, New grade: {grade}")
+
+                    # Update grade if provided
+                    if grade is not None:
+                        student.grade = grade
+                        print(f"Updated grade to: {student.grade}")
+
+                    # Update email if provided in CSV and different
+                    if row.get('email') and row.get('email').strip():
+                        user = User.query.get(student.id)
+                        if user and user.username != email:
+                            user.username = email
+                            print(f"Updated email to: {email}")
+
+                    updated_count += 1
+                else:
+                    # Create new user and student
+                    print(f"Creating new student: {first_name} {last_name}")
+
+                    new_user = User(
+                        username=email,
+                        password="defaultpassword",  # Set a default or random password
+                        role="student",
+                        is_approved=True
+                    )
+                    db.session.add(new_user)
+                    db.session.flush()  # Get the new user ID
+
+                    new_student = Student(
+                        id=new_user.id,
+                        first_name=first_name,
+                        last_name=last_name,
+                        year=year,
+                        grade=grade
+                    )
+                    db.session.add(new_student)
+                    print(f"Created new student with grade: {grade}")
+                    created_count += 1
+
+            except Exception as row_error:
+                print(f"Error processing row {reader.line_num}: {str(row_error)}")
+                error_count += 1
+                continue
+
+        # Commit all changes
+        db.session.commit()
+        print(f"Database committed successfully")
+
+        flash(
+            f"Upload complete for Year {year}. Updated: {updated_count}, Created: {created_count}, Errors: {error_count}")
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Database rolled back due to error: {str(e)}")
+        flash(f"An error occurred: {str(e)}")
+        app.logger.error(f"Error in upload_students: {str(e)}", exc_info=True)
+
+    return redirect(url_for('admin_panel'))
 @app.route('/run-allocation', methods=["POST"])
 def run_allocate_students():
     year = request.form.get("year", type=int)
@@ -471,50 +612,6 @@ def allocation_results():
         allocations = get_allocation_details()
         return render_template("allocation_results.html", allocations=allocations)
 
-@app.route('/upload-students', methods=['POST'])
-def upload_students():
-    year = request.form.get('year', type=int)
-    if 'file' not in request.files:
-        flash('No file selected.')
-        return redirect(url_for('admin_panel'))
-
-    file = request.files['file']
-    if file.filename == '':
-        flash('No file selected.')
-        return redirect(url_for('admin_panel'))
-
-    if not file.filename.endswith('.csv'):
-        flash('Please upload a CSV file.')
-        return redirect(url_for('admin_panel'))
-
-    try:
-        csv_file = TextIOWrapper(file.stream, encoding='utf-8')
-        csv_reader = csv.DictReader(csv_file)
-        for index, row in enumerate(csv_reader):
-            # Use index as the grade/rank (smaller index = higher priority)
-            grade = float(index + 1)  # or (len(students) - index) if you want to invert
-            student = Student.query.filter_by(email=row['email']).first()
-            if student:
-                student.first_name = row['first_name']
-                student.last_name = row['last_name']
-                student.year = year
-                student.grade = grade  # or student.rank = index + 1
-            else:
-                student = Student(
-                    email=row['email'],
-                    first_name=row['first_name'],
-                    last_name=row['last_name'],
-                    year=year,
-                    grade=grade  # or rank = index + 1
-                )
-                db.session.add(student)
-        db.session.commit()
-        flash('Students uploaded and ranked!')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error: {str(e)}')
-
-    return redirect(url_for('admin_panel'))
 
 
 if __name__ == '__main__':
