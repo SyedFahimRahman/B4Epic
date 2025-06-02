@@ -1,97 +1,11 @@
 {% extends "base.html" %}
 
-{% block content %}
-<style>
-  .green-form-container {
-    background: #f6fff6;
-    border-radius: 10px;
-    padding: 32px 28px;
-    max-width: 600px;
-    margin: 32px auto;
-    box-shadow: 0 2px 12px rgba(34,139,34,0.08);
-    font-family: 'Segoe UI', Arial, sans-serif;
-  }
-  .green-form-container h2, .green-form-container h3 {
-    color: #228B22;
-    margin-top: 0;
-  }
-  .green-form-container label {
-    display: block;
-    margin-bottom: 14px;
-    color: #225c22;
-    font-weight: 500;
-  }
-  .green-form-container input[type="text"],
-  .green-form-container input[type="number"],
-  .green-form-container textarea,
-  .green-form-container select {
-    width: 100%;
-    padding: 10px 8px;
-    border: 1px solid #b2d8b2;
-    border-radius: 5px;
-    margin-top: 6px;
-    margin-bottom: 10px;
-    background: #fff;
-    font-size: 1em;
-    transition: border 0.2s;
-  }
-  .green-form-container input:focus,
-  .green-form-container textarea:focus,
-  .green-form-container select:focus {
-    border-color: #228B22;
-    outline: none;
-  }
-  .green-form-container button[type="submit"] {
-    background: linear-gradient(90deg, #34d058 60%, #228B22 100%);
-    color: #fff;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 5px;
-    font-size: 1.1em;
-    cursor: pointer;
-    font-weight: 600;
-    margin-top: 10px;
-    box-shadow: 0 2px 6px rgba(34,139,34,0.13);
-    transition: background 0.2s;
-  }
-  .green-form-container button[type="submit"]:hover {
-    background: linear-gradient(90deg, #228B22 60%, #34d058 100%);
-  }
-  .green-form-container .messages {
-    margin: 18px 0 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .green-form-container .messages li {
-    background: #e8f5e9;
-    color: #228B22;
-    border-left: 4px solid #34d058;
-    padding: 10px 14px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    font-size: 1em;
-  }
-  /* Salary Euro Symbol Styles */
-  .salary-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .salary-input-wrapper .euro-symbol {
-    position: absolute;
-    left: 14px;
-    color: #228B22;
-    font-size: 1.1em;
-    pointer-events: none;
-    font-weight: bold;
-    z-index: 2;
-  }
-  .salary-input-wrapper input[type="number"] {
-    padding-left: 32px !important;
-  }
-</style>
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='add_residency.css') }}">
+{% endblock %}
 
-<div class="green-form-container">
+{% block content %}
+<div class="add-residency-container">
   <h2>Post a New Residency</h2>
   <form method="post">
     <label>Title:
@@ -138,9 +52,8 @@
     </label>
 
     <label>Workplace Type:
-          <input type="text" name="workplace_type" placeholder="e.g. hybrid, on-site">
-   </label>
-
+      <input type="text" name="workplace_type" placeholder="e.g. hybrid, on-site">
+    </label>
 
     <label>Company Contact:
       <input type="text" name="contact" placeholder="Enter company contact" required
