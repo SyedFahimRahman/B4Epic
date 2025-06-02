@@ -1,26 +1,21 @@
-from flask import Flask, redirect, url_for, render_template, session, flash, request
+
+# All the imports
+from flask import Flask, render_template, session, request, redirect, url_for, flash
 from functools import wraps
-from flask import request, redirect, url_for, flash
 import csv
 from io import TextIOWrapper
-
-from allocation_results import get_allocation_details
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
-from allocation_results import allocate_students, get_allocation_details
+from allocations import allocate_students, get_allocation_details
 from api import api_bp
 from sqlalchemy import func
 
 
-# Blueprints (optional modular organization)
-from flask import Blueprint
-
 # Initialize app
 app = Flask(__name__)
 app.config.from_object(Config)
-db = SQLAlchemy()
+db = SQLAlchemy() # for database management
 from models import *
 
 app.secret_key = 'supersecretkey'
@@ -29,6 +24,7 @@ migrate = Migrate(app, db)
 
 app.register_blueprint(api_bp, url_prefix='/api')
 
+# Decorator to make student-only pages
 def student_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -38,9 +34,10 @@ def student_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ----------------- Public Routes -----------------
+# General ROutes
 @app.route("/")
 def index():
+
     student = None
     if session.get("role") == "student" and session.get("student_id"):
         from models import Student
@@ -54,7 +51,7 @@ def home():
     return redirect(url_for('login'))
 
 
-# ----------------- Authentication -----------------
+# Authentication
 @app.route("/log-in", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -67,11 +64,13 @@ def login():
 
         user = User.query.filter_by(username=email).first()
 
+    #Check credentials and role
         if user and user.password == password:
             if user.role == "admin":
                 session["email"] = email
                 session["role"] = "admin"
                 return redirect(url_for("admin_panel"))
+
             elif user.role == "company":
                 if not user.is_approved:
                     flash("Your account is pending admin approval.")
@@ -79,11 +78,14 @@ def login():
                 session["email"] = email
                 session["role"] = "company"
                 session["company_id"] = user.id
-                return redirect(url_for("index"))  # or another company dashboard if you have one
+                return redirect(url_for("index"))
+
             else:
+                # Check approval
                 if not user.is_approved:
                     flash("Your account is pending admin approval.")
                     return render_template("login.html")
+
                 session["email"] = email
                 session["role"] = user.role
                 session["student_id"] = user.id
@@ -91,18 +93,21 @@ def login():
         flash("Invalid credentials.")
     return render_template("login.html")
 
-
+# Sign-up page for new users
 @app.route("/sign-up", methods=["GET", "POST"])
 def signup():
+    #Sign-up page if first user ever to assign admin role
     is_first_user = User.query.count() == 0
 
     if request.method == "POST":
+        # Get all form data
         email = request.form.get("email")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
         role = request.form.get("role")
         company_name = request.form.get("company_name")
 
+        # Validate
         if not email or not password or not confirm_password:
             flash("All fields are required.")
         elif password != confirm_password:
@@ -110,13 +115,12 @@ def signup():
         elif User.query.filter_by(username=email).first():
             flash("Email already registered or pending approval.")
         else:
-            # Automatically assign 'admin' to the first user
+            # Automatically assign admin to the first user
             if is_first_user:
                 role = "admin"
 
-            new_user = None
-
             if role == "company":
+                # Company registration
                 line_1 = request.form.get("line_1")
                 line_2 = request.form.get("line_2")
                 town = request.form.get("town")
@@ -133,10 +137,11 @@ def signup():
                 )
                 db.session.add(address)
                 db.session.flush()
-                company = Company(name=company_name, address_id = address.id)
+                company = Company(name=company_name, address_id = address.id) # get address.id before commit
                 db.session.add(company)
                 db.session.flush()
 
+                # Create user and associate with company
                 new_user = User(
                     username=email,
                     password=password,
@@ -148,11 +153,13 @@ def signup():
                 db.session.commit()
 
             elif role == "student":
+                # Student registration
                 first_name = request.form.get("first_name")
                 last_name = request.form.get("last_name")
                 phone_no = request.form.get("phone_no")
                 year =  request.form.get("year")
 
+                # Create user record
                 new_user = User(
                     username=email,
                     password=password,
@@ -162,18 +169,20 @@ def signup():
                 db.session.add(new_user)
                 db.session.commit()
 
+                # Create student record and associate with user
                 new_student = Student(
                     id=new_user.id,
                     first_name=first_name,
                     last_name=last_name,
                     phone_no=phone_no,
                     year=year,
-                    address_id=None  # You can modify this if you collect address info
+                    address_id=None
                 )
                 db.session.add(new_student)
                 db.session.commit()
 
             else:
+                # default for other roles
                 new_user = User(
                     username=email,
                     password=password,
@@ -188,15 +197,14 @@ def signup():
 
     return render_template("signup.html", show_admin_option=is_first_user)
 
+# Logout that clears session and returns to home
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out successfully.")
     return redirect(url_for("index"))
 
-# ----------------- Admin Panel -----------------
-# Modify your admin_panel() view function:
-@app.route("/admin", methods=["GET", "POST"])
+#  Admin Panel
 @app.route("/admin", methods=["GET", "POST"])
 def admin_panel():
     # Check if user is admin first
@@ -206,6 +214,7 @@ def admin_panel():
         return redirect(url_for("login"))
 
     if request.method == "POST":
+        # handle user or position approval
         action = request.form.get("action")
         user_email = request.form.get("user_email")
         position_id = request.form.get("position_id")
@@ -238,8 +247,10 @@ def admin_panel():
     pending_users = User.query.filter_by(is_approved=False).all()
     pending_positions = ResidencyPosition.query.filter_by(is_approved=False).all()
 
-    # Try to get students with their associated user data using proper join
+    # Try to get students with their associated user data using join
+    # This is useful for displaying both student profile info and their user login info together
     try:
+        # The join is on Student.id == User.id (since each student is also a user)
         students_with_users = db.session.query(Student, User).join(User, Student.id == User.id).all()
     except Exception as e:
         print(f"Error joining students with users: {e}")
@@ -249,6 +260,7 @@ def admin_panel():
     students = Student.query.all()
     companies = Company.query.all()
 
+    # Render the admin panel template, passing the data to the template
     return render_template(
         "admin.html",
         pending_users=pending_users,
@@ -258,18 +270,7 @@ def admin_panel():
         companies=companies,
         User=User
     )
-# ----------------- Company Assignments -----------------
-@app.route('/view-assignments')
-def view_assignments():
-    assignments = CompanyAssignment.query.all()
-    output = []
-    for a in assignments:
-        student = Student.query.get(a.student_id)
-        company = Company.query.get(a.company_id)
-        output.append(f"{student.first_name} {student.last_name} : {company.name}")
-    return "<br>".join(output)
-
-
+# For companies to upload residencies
 @app.route("/company/add_residency", methods=["GET", "POST"])
 def add_residency():
     # Check if user is logged in and is an approved company
@@ -361,7 +362,7 @@ def add_residency():
         company_username=user.username
     )
 
-
+# Show all the residencies
 @app.route("/residencies")
 def list_residencies():
     student = None
@@ -398,6 +399,7 @@ def list_residencies():
 
     return render_template("residency_list.html", residencies=residencies_data, student=student)
 
+# For students to rank the residencies
 @app.route('/student/rank_residencies/<int:year>', methods=['GET', 'POST'])
 @student_required
 def rank_residencies(year):
@@ -407,6 +409,7 @@ def rank_residencies(year):
         flash("Student not found.")
         return redirect(url_for('index'))
 
+    # Prevent students from accessing other years' ranking pages
     if student.year != year:
         flash("You cannot access another year's ranking page.")
         return redirect(url_for('index'))
@@ -415,6 +418,7 @@ def rank_residencies(year):
     positions = ResidencyPosition.query.filter_by(year=student.year).all()
 
     if request.method == 'POST':
+        # Get the order of positions from the form
         position_order_str = request.form.get('position_order', '')
         if not position_order_str:
             flash("Please rank the positions before submitting.")
@@ -425,7 +429,7 @@ def rank_residencies(year):
         # Delete old rankings for this student
         Ranking.query.filter_by(student_id=student_id).delete()
 
-        # Add new rankings
+        # Add new rankings based on the submitted order
         for rank, pos_id in enumerate(position_ids, start=1):
             pos = ResidencyPosition.query.get(int(pos_id))
             if pos is None:
@@ -611,7 +615,6 @@ def allocation_results():
             return redirect(url_for("login"))
         allocations = get_allocation_details()
         return render_template("allocation_results.html", allocations=allocations)
-
 
 
 if __name__ == '__main__':
