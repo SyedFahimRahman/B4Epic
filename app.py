@@ -43,14 +43,6 @@ def index():
         from models import Student
         student = Student.query.get(session["student_id"])
     return render_template("index.html", student=student)
-
-@app.route("/home")
-def home():
-    if "email" in session:
-        return f"Hello {session['email']}, welcome to the home page!"
-    return redirect(url_for('login'))
-
-
 # Authentication
 @app.route("/log-in", methods=["GET", "POST"])
 def login():

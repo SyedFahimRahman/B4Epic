@@ -1,28 +1,46 @@
 {% extends "base.html" %}
 
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+{% endblock %}
+
 {% block content %}
   <div class="container mt-4">
     <h1>Welcome to the ISE Jobs Board</h1>
 
     {% if session.get("role") == "company" and session.get("email") %}
-      <a href="{{ url_for('add_residency') }}" class="btn btn-success mt-3" style="font-size: 1.2em;"> Add Residency Position</a>
+      <div class="btn-container">
+        <a href="{{ url_for('add_residency') }}" class="btn-green" style="font-size: 1.2em;">Add Residency Position</a>
+      </div>
     {% endif %}
 
     {% if session.get("role") == "student" and session.get("email") and student %}
-  <a href="{{ url_for('rank_residencies', year=student.year) }}" class="btn btn-primary mt-3">Rank Residency Positions</a>
-{% endif %}
+      <div class="homepage-intro">
+        <h2>Welcome to Your Residency Dashboard</h2>
+        <p>
+          Here you can manage every aspect of your residency journey. Get started by following these simple steps:
+        </p>
+        <ol>
+          <li>View all available residency positions to explore your options.</li>
+          <li>Rank your preferred positions in order of your interest.</li>
+          <li>Check your submitted rankings anytime to stay updated.</li>
+        </ol>
+      </div>
+      <div class="btn-container">
+        <a href="{{ url_for('list_residencies') }}" class="btn-green">View All Residency Positions</a>
+        <a href="{{ url_for('rank_residencies', year=student.year) }}" class="btn-green">Rank Residency Positions</a>
+        <a href="{{ url_for('view_rankings') }}" class="btn-green">View Residencies Ranking</a>
+      </div>
+    {% endif %}
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
-
-
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
   </div>
 {% endblock %}

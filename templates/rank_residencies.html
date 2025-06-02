@@ -2,64 +2,11 @@
 
 {% block title %}Rank Residency Positions{% endblock %}
 
-{% block content %}
-<style>
-    body { background: #f9fff9; }
-    #positionsList { list-style: none; padding: 0; max-width: 800px; margin: 0 auto; }
-    #positionsList li {
-        margin: 10px 0;
-        padding: 16px;
-        background: #e8f5e9;
-        border: 1px solid #c8e6c9;
-        border-radius: 10px;
-        cursor: move;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        transition: background 0.2s;
-    }
-    #positionsList li:hover {
-        background: #dcedc8;
-    }
-    .flashes {
-        list-style: none;
-        padding: 12px 20px;
-        margin: 0 auto 20px;
-        border: 1px solid #66bb6a;
-        background-color: #e8f5e9;
-        color: #2e7d32;
-        border-radius: 10px;
-        max-width: 800px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .flashes li {
-        padding: 4px 0;
-    }
-    h2 {
-        color: #2e7d32;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    button {
-        display: block;
-        margin: 20px auto 0;
-        padding: 12px 24px;
-        background: #4caf50;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    button:hover {
-        background: #388e3c;
-    }
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-</style>
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='rank_residencies.css') }}">
+{% endblock %}
 
+{% block content %}
 <div class="container">
     <h2>Rank Year {{ student.year }} Residency Positions</h2>
 

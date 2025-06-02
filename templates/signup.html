@@ -10,15 +10,6 @@
     <div class="signup-box">
       <h2>Sign-up</h2>
 
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <ul class="flash-messages" style="list-style: none; padding: 0; margin: 20px 0; color: yellow;">
-            {% for message in messages %}
-              <li>{{ message }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-      {% endwith %}
 
       <form method="POST" onsubmit="return validateSignupForm();">
         <input type="email" id="email" name="email" required placeholder="Email">

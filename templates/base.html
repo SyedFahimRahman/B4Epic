@@ -35,13 +35,19 @@
       </a>
       <div class="d-flex">
         <ul class="navbar-nav flex-row">
-          <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+          {% if session.get("role") == "admin" and session.get("email") %}
+             <li class="nav-item px-3">
+                 <a class="nav-link" href="{{ url_for('admin_panel') }}">Home</a>
+             </li>
+            {% else %}
+                <li class="nav-item px-3">
+                     <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                </li>
+            {% endif %}
+
 
           {% if session.get("email") %}
             <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('list_residencies') }}">Residencies</a></li>
-              {% if session.get('role') == 'student' %}
-             <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('view_rankings') }}">View Residencies Ranking</a></li>
-{% endif %}
             <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
           {% else %}
             <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
@@ -52,18 +58,19 @@
     </nav>
 
     <!-- Flash Messages -->
-    <div class="container-fixed">
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            {{ messages[0] }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-        {% endif %}
-      {% endwith %}
-    </div>
+   <div class="container-fixed">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+        {{ messages[0] }}
+        <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+
 
     <!-- Main Content -->
     <div class="container-fixed">
