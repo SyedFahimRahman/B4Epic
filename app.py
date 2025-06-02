@@ -1,4 +1,3 @@
-
 # All the imports
 from flask import Flask, render_template, session, request, redirect, url_for, flash
 from functools import wraps
@@ -10,7 +9,7 @@ from config import Config
 from allocations import allocate_students, get_allocation_details
 from api import api_bp
 from sqlalchemy import func
-
+from werkzeug.security import generate_password_hash
 
 # Initialize app
 app = Flask(__name__)
@@ -133,10 +132,13 @@ def signup():
                 db.session.add(company)
                 db.session.flush()
 
+                # hashing the password before saving it
+                hashed_password = generate_password_hash(password)
+
                 # Create user and associate with company
                 new_user = User(
                     username=email,
-                    password=password,
+                    password=hashed_password,
                     role="company",
                     is_approved=False,
                     company_id=company.id
@@ -151,10 +153,13 @@ def signup():
                 phone_no = request.form.get("phone_no")
                 year =  request.form.get("year")
 
+                # hashing the password before saving it
+                hashed_password = generate_password_hash(password)
+
                 # Create user record
                 new_user = User(
                     username=email,
-                    password=password,
+                    password=hashed_password,
                     role="student",
                     is_approved=False
                 )
@@ -175,6 +180,7 @@ def signup():
 
             else:
                 # default for other roles
+                hashed_password = generate_password_hash(password)
                 new_user = User(
                     username=email,
                     password=password,
