@@ -1,6 +1,6 @@
 from app import app
 from extensions import db
-from models import User, Student, QCA, Company, ResidencyPosition, Preference, Round
+from models import User, Student, QCA, Company, ResidencyPosition, Preference
 from datetime import datetime
 
 with app.app_context():
@@ -39,8 +39,13 @@ with app.app_context():
     qca1 = QCA(student_id=student1.id, semester=1, qca_score=3.7)
     qca2 = QCA(student_id=student2.id, semester=1, qca_score=3.9)
     qca3 = QCA(student_id=student3.id, semester=1, qca_score=3.6)
-
-
+    qca4 = QCA(student_id=student4.id, semester=1, qca_score=3.5)
+    qca5 = QCA(student_id=student5.id, semester=1, qca_score=3.4)
+    qca6 = QCA(student_id=student6.id, semester=1, qca_score=3.3)
+    qca7 = QCA(student_id=student7.id, semester=1, qca_score=3.2)
+    qca8 = QCA(student_id=student8.id, semester=1, qca_score=3.1)
+    qca9 = QCA(student_id=student9.id, semester=1, qca_score=3.0)
+    qca10 = QCA(student_id=student10.id, semester=1, qca_score=2.9)
     db.session.add_all([qca1, qca2, qca3, qca4, qca5,
         qca6, qca7, qca8, qca9, qca10])
 
@@ -57,7 +62,7 @@ with app.app_context():
     company10 = Company(name="Amazon", num_of_positions= 3)
     company11 = Company(name="Intercom", num_of_positions= 2)
     company12 = Company(name="DevEire", num_of_positions= 1)
-
+    company13 = Company(name="Johnson&Johnson", num_of_positions=2)
     company14 = Company(name="Dogpatch", num_of_positions=1)
     company15 = Company(name="Kirby", num_of_positions= 1)
     company16 = Company(name="Patch", num_of_positions= 1)

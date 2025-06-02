@@ -50,14 +50,14 @@ class Company(db.Model):
     contact = db.Column(db.String(100))
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     address = db.relationship('Address', backref='companies', lazy=True)
+    num_of_positions = db.Column(db.Integer, nullable=False, default=0)
 
-
-"""class Preference(db.Model):
+class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
     preference_rank = db.Column(db.Integer)
-"""
+
 
 class Round(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,16 +81,16 @@ class Ranking(db.Model):
 class ResidencyPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
-    year = db.Column(db.Integer)
+    year = db.Column(db.Integer, nullable=False)
     residency = db.Column(db.Text)
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
     num_of_residencies = db.Column(db.Integer)
     is_approved = db.Column(db.Boolean, default=False)
     company = db.relationship('Company', backref='residency_positions', lazy=True)
+    salary= db.Column(db.Float)
+    workplace_type = db.Column(db.String(100))
 
-
-    year = db.Column(db.Integer, nullable=False)
 
 class CompanyAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
