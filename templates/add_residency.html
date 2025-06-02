@@ -1,94 +1,188 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Post a New Residency</h2>
-<form method="post">
-  <label>Title:
-    <input type="text" name="title" placeholder="Enter residency title" required>
-  </label><br>
+<style>
+  .green-form-container {
+    background: #f6fff6;
+    border-radius: 10px;
+    padding: 32px 28px;
+    max-width: 600px;
+    margin: 32px auto;
+    box-shadow: 0 2px 12px rgba(34,139,34,0.08);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .green-form-container h2, .green-form-container h3 {
+    color: #228B22;
+    margin-top: 0;
+  }
+  .green-form-container label {
+    display: block;
+    margin-bottom: 14px;
+    color: #225c22;
+    font-weight: 500;
+  }
+  .green-form-container input[type="text"],
+  .green-form-container input[type="number"],
+  .green-form-container textarea,
+  .green-form-container select {
+    width: 100%;
+    padding: 10px 8px;
+    border: 1px solid #b2d8b2;
+    border-radius: 5px;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    background: #fff;
+    font-size: 1em;
+    transition: border 0.2s;
+  }
+  .green-form-container input:focus,
+  .green-form-container textarea:focus,
+  .green-form-container select:focus {
+    border-color: #228B22;
+    outline: none;
+  }
+  .green-form-container button[type="submit"] {
+    background: linear-gradient(90deg, #34d058 60%, #228B22 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+    box-shadow: 0 2px 6px rgba(34,139,34,0.13);
+    transition: background 0.2s;
+  }
+  .green-form-container button[type="submit"]:hover {
+    background: linear-gradient(90deg, #228B22 60%, #34d058 100%);
+  }
+  .green-form-container .messages {
+    margin: 18px 0 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .green-form-container .messages li {
+    background: #e8f5e9;
+    color: #228B22;
+    border-left: 4px solid #34d058;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 1em;
+  }
+  /* Salary Euro Symbol Styles */
+  .salary-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .salary-input-wrapper .euro-symbol {
+    position: absolute;
+    left: 14px;
+    color: #228B22;
+    font-size: 1.1em;
+    pointer-events: none;
+    font-weight: bold;
+    z-index: 2;
+  }
+  .salary-input-wrapper input[type="number"] {
+    padding-left: 32px !important;
+  }
+</style>
 
-  <label>Description:
-    <textarea name="description" placeholder="Enter detailed description" required></textarea>
-  </label><br>
+<div class="green-form-container">
+  <h2>Post a New Residency</h2>
+  <form method="post">
+    <label>Title:
+      <input type="text" name="title" placeholder="Enter residency title" required>
+    </label>
 
-  <label>Number of Residencies:
-    <input type="number" name="num_of_residencies" min="1" placeholder="e.g. 5" required>
-  </label><br>
+    <label>Description:
+      <textarea name="description" placeholder="Enter detailed description" required></textarea>
+    </label>
+
+    <label>Number of Residencies:
+      <input type="number" name="num_of_residencies" min="1" placeholder="e.g. 5" required>
+    </label>
 
     <label for="year">Year:</label>
     <select name="year" id="year" required>
-    <option value="1">Year 1</option>
-    <option value="2">Year 2</option>
-    <option value="3">Year 3</option>
-    <option value="4">Year 4</option>
-</select>
-
-  <label>Residency Type:
-    <select name="residency_type" required>
-      <option value="" disabled selected>Select type</option>
-      <option value="Type1">R1</option>
-      <option value="Type2">R1 + 2</option>
-      <option value="Type3">R2</option>
-      <option value="Type4">R3</option>
-      <option value="Type5">R4</option>
-        <option value="Type5">R5</option>
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
     </select>
-  </label><br>
 
-  <label>Is Combined Residency?
-    <select name="is_combined" required>
-      <option value="" disabled selected>Select an option</option>
-      <option value="true">Yes</option>
-      <option value="false">No</option>
-    </select>
-  </label><br>
+    <label>Residency Type:
+      <select name="residency_type" required>
+        <option value="" disabled selected>Select type</option>
+        <option value="Type1">R1</option>
+        <option value="Type2">R1 + 2</option>
+        <option value="Type3">R2</option>
+        <option value="Type4">R3</option>
+        <option value="Type5">R4</option>
+        <option value="Type6">R5</option>
+      </select>
+    </label>
 
-  <label>Requirements:
-    <textarea name="requirements" placeholder="List requirements here"></textarea>
-  </label><br>
+    <label>Salary:
+      <div class="salary-input-wrapper">
+        <span class="euro-symbol">€</span>
+        <input type="number" name="salary" min="0" step="0.01" placeholder="Salary per month" required>
+      </div>
+    </label>
 
-  <h3>Company Details</h3>
+    <label>Requirements:
+      <textarea name="requirements" placeholder="List requirements here"></textarea>
+    </label>
 
-  <label>Company Contact:
-    <input type="text" name="contact" placeholder="Enter company contact" required
-      value="{{ company.contact if company else '' }}">
-  </label><br>
+    <label>Workplace Type:
+          <input type="text" name="workplace_type" placeholder="e.g. hybrid, on-site">
+   </label>
 
-  <label>Address Line 1:
-    <input type="text" name="line_1" placeholder="Enter street address" required
-      value="{{ address.line_1 if address else '' }}">
-  </label><br>
 
-  <label>Address Line 2:
-    <input type="text" name="line_2" placeholder="Enter address line 2"
-      value="{{ address.line_2 if address else '' }}">
-  </label><br>
+    <label>Company Contact:
+      <input type="text" name="contact" placeholder="Enter company contact" required
+        value="{{ company.contact if company else '' }}">
+    </label>
 
-  <label>Town:
-    <input type="text" name="town" placeholder="Enter town/city" required
-      value="{{ address.town if address else '' }}">
-  </label><br>
+    <label>Address Line 1:
+      <input type="text" name="line_1" placeholder="Enter street address" required
+        value="{{ address.line_1 if address else '' }}">
+    </label>
 
-  <label>County:
-    <input type="text" name="county" placeholder="Enter county" required
-      value="{{ address.county if address else '' }}">
-  </label><br>
+    <label>Address Line 2:
+      <input type="text" name="line_2" placeholder="Enter address line 2"
+        value="{{ address.line_2 if address else '' }}">
+    </label>
 
-  <label>Eircode:
-    <input type="text" name="eircode" placeholder="Enter Eircode" required
-      value="{{ address.eircode if address else '' }}">
-  </label><br>
+    <label>Town:
+      <input type="text" name="town" placeholder="Enter town/city" required
+        value="{{ address.town if address else '' }}">
+    </label>
 
-  <button type="submit">Post Residency</button>
-</form>
+    <label>County:
+      <input type="text" name="county" placeholder="Enter county" required
+        value="{{ address.county if address else '' }}">
+    </label>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+    <label>Eircode:
+      <input type="text" name="eircode" placeholder="Enter Eircode" required
+        value="{{ address.eircode if address else '' }}">
+    </label>
+
+    <button type="submit">Post Residency</button>
+  </form>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+</div>
 {% endblock %}

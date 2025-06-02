@@ -2,15 +2,11 @@
 
 {% block title %}All Residency lol Positions{% endblock %}
 
-
-
-
 {% block content %}
 
     {% if student %}
   <p>DEBUG: student.year = {{ student.year }}</p>
 {% endif %}
-
 
   {% set year_names = {1: "First", 2: "Second", 3: "Third", 4: "Fourth"} %}
 {% if student %}
@@ -23,8 +19,6 @@
 {% else %}
   <h1 style="color:#2e7d32; margin-bottom: 18px;">All Residency Positions</h1>
 {% endif %}
-
-
 
   {% if residencies %}
     <div style="display: flex; flex-direction: column; gap: 22px;">
@@ -48,14 +42,23 @@
           <div style="margin-bottom: 5px;">
             <strong>Description:</strong> {{ res.description }}
           </div>
+        <div style="margin-bottom: 5px;">
+            <strong>Requirements:</strong> {{ res.requirements }}
+          </div>
+          <div style="margin-bottom: 5px;">
+            <strong>Salary:</strong>
+            {% if res.salary %}
+              €{{ res.salary }}
+            {% else %}
+              Not specified
+            {% endif %}
+          </div>
+        <div style="margin-bottom: 5px;">
+            <strong>Workplace type:</strong> {{ res.workplace_type }}
+          </div>
           <div style="margin-bottom: 5px;">
             <strong>Number of Positions:</strong> {{ res.num_of_residencies }}
           </div>
-          {% if res.is_combined %}
-            <div style="color: #43a047; font-style: italic; margin-bottom: 5px;">
-              Combined Residency Position
-            </div>
-          {% endif %}
           <div style="margin-bottom: 3px;">
             <strong>Contact:</strong> {{ res.contact }}
           </div>
