@@ -292,8 +292,8 @@ def add_residency():
             return redirect(url_for("add_residency"))
 
         residency_type = request.form.get("residency_type")
-        salary = request.form.get("salary")
-        workplace_type = request.form.get("workplace_type")
+
+
         year = int(request.form.get("year"))
         company.contact = request.form.get("contact")
 
@@ -330,7 +330,7 @@ def add_residency():
             description=description,
             num_of_residencies=num_of_residencies,
             residency=residency_type,
-            salary=salary,
+
             workplace_type=workplace_type,
             company_id=company.id,
             year=year,
@@ -380,9 +380,9 @@ def list_residencies():
             "description": position.description,
             "num_of_residencies": position.num_of_residencies,
             "residency_type": position.residency,
-            "salary": position.salary,
+
             "company_name": company.name,
-            "workplace_type": position.workplace_type,
+
             "contact": company.contact,
             "address_line_1": address.line_1,
             "address_line_2": address.line_2,

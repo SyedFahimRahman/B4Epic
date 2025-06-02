@@ -88,8 +88,8 @@ class ResidencyPosition(db.Model):
     num_of_residencies = db.Column(db.Integer)
     is_approved = db.Column(db.Boolean, default=False)
     company = db.relationship('Company', backref='residency_positions', lazy=True)
-    salary= db.Column(db.Float)
-    workplace_type = db.Column(db.String(100))
+
+
     year = db.Column(db.Integer, nullable=False)
 
 class CompanyAssignment(db.Model):
