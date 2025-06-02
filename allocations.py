@@ -1,7 +1,10 @@
+from datetime import datetime
+
+from flask import render_template
 from sqlalchemy.orm import joinedload
 
-from models import db, Student, Ranking, ResidencyPosition, CompanyAssignment
-
+from models import db, Student, Ranking, ResidencyPosition, CompanyAssignment, Company, User
+from flask_mail import Message
 def allocate_students(year):
     # Clear old assignments for this round
     CompanyAssignment.query.filter_by(round_id=1).delete()
@@ -36,7 +39,7 @@ def allocate_students(year):
                     company_id=res_pos.company_id,
                     residency_id=res_pos.id,
                     title=res_pos.title,
-                    round_id=1  # Ensure round_id=1 exists in round table
+                    # round_id=1  # Ensure round_id=1 exists in round table
                 )
                 db.session.add(assignment)
                 slot_info["assigned"] += 1
@@ -72,3 +75,46 @@ def get_allocation_details():
         })
 
     return result
+def notify_allocation(year):
+    from app import app, mail
+    with app.app_context():
+        # Join assignments with student, position, and company data for the given year
+        assignments = db.session.query(CompanyAssignment, Student, ResidencyPosition, Company)\
+            .join(Student, CompanyAssignment.student_id == Student.id)\
+            .join(ResidencyPosition, CompanyAssignment.residency_id == ResidencyPosition.id)\
+            .join(Company, CompanyAssignment.company_id == Company.id)\
+            .filter(ResidencyPosition.year == year).all()
+
+        for assignment, student, position, company in assignments:
+            student_user = User.query.get(student.id)
+            company_user = User.query.get(company.id)
+
+            # --- Email to Student ---
+            if student_user:
+                student_msg = Message(
+                    subject="Residency Assignment",
+                    recipients=[student_user.username]
+                )
+                student_msg.html = render_template(
+                    "student_assignment.html",
+                    student=student,
+                    position=position,
+                    company=company,
+                    current_year=datetime.now().year
+                )
+                mail.send(student_msg)
+
+            # --- Email to Company ---
+            if company_user:
+                company_msg = Message(
+                    subject="Student Assignment",
+                    recipients=[company_user.username]
+                )
+                company_msg.html = render_template(
+                    "company_assignment.html",
+                    student=student,
+                    position=position,
+                    company=company,
+                    current_year=datetime.now().year
+                )
+                mail.send(company_msg)
