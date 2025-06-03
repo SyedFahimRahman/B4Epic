@@ -505,7 +505,11 @@ def upload_students():
                 first_name = row.get('first_name', '').strip()
                 last_name = row.get('last_name', '').strip()
                 grade_str = row.get('grade', '').strip()
-                email = row.get('email', '').strip() or f"{first_name.lower()}.{last_name.lower()}@example.com"
+                email = row.get('email', '').strip()
+                if not email:
+                    print(f"Row {reader.line_num}: Missing email. Skipped.")
+                    error_count += 1
+                    continue
 
                 # Debug: Print current row data
                 print(f"Processing row {reader.line_num}: {first_name} {last_name}, grade: '{grade_str}'")
