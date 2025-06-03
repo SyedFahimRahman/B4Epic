@@ -5,7 +5,7 @@ import csv
 from io import TextIOWrapper
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 from allocations import allocate_students, get_allocation_details, notify_allocation
 from sqlalchemy import func
@@ -61,7 +61,7 @@ def login():
         user = User.query.filter_by(username=email).first()
 
     #Check credentials and role
-        if user and user.password == password:
+        if user and check_password_hash(user.password, password):
             if user.role == "admin":
                 session["email"] = email
                 session["role"] = "admin"
