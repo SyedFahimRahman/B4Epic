@@ -6,24 +6,19 @@ from io import TextIOWrapper
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
-from allocations import allocate_students, get_allocation_details, notify_allocation
+from allocations import allocate_students, get_allocation_details
 from api import api_bp
 from sqlalchemy import func
-from flask_mail import Mail
-from dotenv import load_dotenv
-
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initialize app
-load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy() # for database management
-mail = Mail()  # mail initialization
 from models import *
 
 app.secret_key = 'supersecretkey'
 db.init_app(app)
-mail.init_app(app)
 migrate = Migrate(app, db)
 
 app.register_blueprint(api_bp, url_prefix='/api')
@@ -38,7 +33,7 @@ def student_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# General ROutes
+# General Routes
 @app.route("/")
 def index():
 
@@ -61,7 +56,9 @@ def login():
         user = User.query.filter_by(username=email).first()
 
     #Check credentials and role
-        if user and user.password == password:
+        if user and check_password_hash(user.password, password):  # secure password comparison
+        # if user and password == password:
+
             if user.role == "admin":
                 session["email"] = email
                 session["role"] = "admin"
@@ -608,8 +605,7 @@ def run_allocate_students():
         db.session.commit() #clear all like matching
 
         allocate_students(year)
-        notify_allocation(year)
-        flash(f"Allocation completed and emails sent for Year {year}.")
+        flash(f"Allocation complete for Year {year}.")
         return redirect(url_for("allocation_results", year=year))
     except Exception as e:
         flash(f"Error during allocation: {str(e)}")
