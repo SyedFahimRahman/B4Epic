@@ -555,28 +555,9 @@ def upload_students():
 
                     updated_count += 1
                 else:
-                    # Create new user and student
-                    print(f"Creating new student: {first_name} {last_name}")
-
-                    new_user = User(
-                        username=email,
-                        password="defaultpassword",  # Set a default or random password
-                        role="student",
-                        is_approved=True
-                    )
-                    db.session.add(new_user)
-                    db.session.flush()  # Get the new user ID
-
-                    new_student = Student(
-                        id=new_user.id,
-                        first_name=first_name,
-                        last_name=last_name,
-                        year=year,
-                        grade=grade
-                    )
-                    db.session.add(new_student)
-                    print(f"Created new student with grade: {grade}")
-                    created_count += 1
+                    print(f"Row {reader.line_num}: Student {first_name} {last_name} (year {year}) not found. Skipped.")
+                    error_count += 1
+                    continue
 
             except Exception as row_error:
                 print(f"Error processing row {reader.line_num}: {str(row_error)}")
