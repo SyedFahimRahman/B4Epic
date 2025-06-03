@@ -6,10 +6,8 @@ from io import TextIOWrapper
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash
-
 from config import Config
 from allocations import allocate_students, get_allocation_details, notify_allocation
-# from api import api_bp
 from sqlalchemy import func
 from flask_mail import Mail
 from dotenv import load_dotenv
@@ -27,8 +25,6 @@ app.secret_key = 'supersecretkey'
 db.init_app(app)
 mail.init_app(app)
 migrate = Migrate(app, db)
-
-# app.register_blueprint(api_bp, url_prefix='/api')
 
 # Decorator to make student-only pages
 def student_required(f):
@@ -300,13 +296,27 @@ def add_residency():
 
         try:
             num_of_residencies = int(request.form.get("num_of_residencies"))
+            if num_of_residencies < 1:
+                raise ValueError("Number of residencies must be at least 1.")
         except (TypeError, ValueError):
             flash("Please enter a valid number for residencies.")
             return redirect(url_for("add_residency"))
 
-        residency_type = request.form.get("residency_type")
-        salary = request.form.get("salary")
+        try:
+            salary = float(request.form.get("salary"))
+            if salary < 0:
+                raise ValueError("Salary cannot be negative.")
+        except (TypeError, ValueError):
+            flash("Please enter a valid number for salary.")
+            return redirect(url_for("add_residency"))
+
         workplace_type = request.form.get("workplace_type")
+        if workplace_type not in ["on-site", "remote", "hybrid"]:
+            flash("Please select a valid workplace type (remote, hybrid, onsite).")
+            return redirect(url_for("add_residency"))
+
+        accommodation_support = request.form.get("accommodation_support") == "yes"
+        residency_type = request.form.get("residency_type")
         year = int(request.form.get("year"))
         company.contact = request.form.get("contact")
 
@@ -345,6 +355,7 @@ def add_residency():
             residency=residency_type,
             salary=salary,
             workplace_type=workplace_type,
+            accommodation_support=accommodation_support,
             company_id=company.id,
             year=year,
             is_approved=False
@@ -382,8 +393,8 @@ def list_residencies():
         Company,
         Address
     ).join(Company, ResidencyPosition.company_id == Company.id
-    ).join(Address, Company.address_id == Address.id
-    ).all()
+        ).join(Address, Company.address_id == Address.id
+            ).all()
 
     # Prepare a list of dicts to send to template
     residencies_data = []
@@ -393,7 +404,8 @@ def list_residencies():
             "description": position.description,
             "num_of_residencies": position.num_of_residencies,
             "residency_type": position.residency,
-            "salary": position.salary,
+            "salary": f"${position.salary:,}" if position.salary else "Not specified",
+            "accommodation_support": "Yes" if position.accommodation_support else "No",
             "company_name": company.name,
             "workplace_type": position.workplace_type,
             "contact": company.contact,
