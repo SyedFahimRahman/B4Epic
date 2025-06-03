@@ -41,6 +41,23 @@
     </label>
 
 
+    <label>Salary:
+      <input type="number" step="0.01" name="salary" placeholder="Enter the salary for this position">
+    </label>
+
+    <label for="workplace_type">Workplace Type:</label>
+    <select name="workplace_type" id="workplace_type" required>
+      <option value="" disabled selected>Please select</option>
+      <option value="onsite">Onsite</option>
+      <option value="remote">Remote</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+
+    <label>
+      <input type="checkbox" name="accommodation_support">
+      Accommodation Support Provided
+    </label>
+
 
     <label>Requirements:
       <textarea name="requirements" placeholder="List requirements here"></textarea>

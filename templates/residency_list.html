@@ -5,7 +5,7 @@
 {% block content %}
 
     {% if student %}
-  <p>DEBUG: student.year = {{ student.year }}</p>
+{# <p>DEBUG: student.year = {{ student.year }}</p> #} {#to avoid unnecessary error info leaks#}
 {% endif %}
 
   {% set year_names = {1: "First", 2: "Second", 3: "Third", 4: "Fourth"} %}
@@ -24,7 +24,7 @@
     <div style="display: flex; flex-direction: column; gap: 22px;">
       {% for res in residencies %}
         <div style="
-          border: 1.5px solid #c8e6c9;
+          border: 2px solid #c8e6c9;
           border-radius: 12px;
           background: #f7faf7;
           box-shadow: 0 2px 8px rgba(46,125,50,0.05);
@@ -45,6 +45,20 @@
         <div style="margin-bottom: 5px;">
             <strong>Requirements:</strong> {{ res.requirements }}
           </div>
+          <div style="margin-bottom: 5px;">
+            <strong>Salary:</strong>
+            {% if res.salary %}
+              €{{ "%.2f"|format(float(res.salary)) }}
+            {% else %}
+              Not specified
+            {% endif %}
+          </div>
+        <div style="margin-bottom: 5px;">
+            <strong>Workplace type:</strong> {{ res.workplace_type }}
+          </div>
+        <div style="margin-bottom: 5px;">
+          <strong>Accommodation Support:</strong> {{ "Yes" if res.accommodation_support else "No" }}
+            </div>
           <div style="margin-bottom: 5px;">
             <strong>Number of Positions:</strong> {{ res.num_of_residencies }}
           </div>
