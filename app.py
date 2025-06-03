@@ -6,7 +6,6 @@ from io import TextIOWrapper
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash
-
 from config import Config
 from allocations import allocate_students, get_allocation_details, notify_allocation
 from sqlalchemy import func
@@ -299,13 +298,27 @@ def add_residency():
 
         try:
             num_of_residencies = int(request.form.get("num_of_residencies"))
+            if num_of_residencies < 1:
+                raise ValueError("Number of residencies must be at least 1.")
         except (TypeError, ValueError):
             flash("Please enter a valid number for residencies.")
             return redirect(url_for("add_residency"))
 
-        residency_type = request.form.get("residency_type")
-        salary = request.form.get("salary")
+        try:
+            salary = float(request.form.get("salary"))
+            if salary < 0:
+                raise ValueError("Salary cannot be negative.")
+        except (TypeError, ValueError):
+            flash("Please enter a valid number for salary.")
+            return redirect(url_for("add_residency"))
+
         workplace_type = request.form.get("workplace_type")
+        if workplace_type not in ["on-site", "remote", "hybrid"]:
+            flash("Please select a valid workplace type (remote, hybrid, onsite).")
+            return redirect(url_for("add_residency"))
+
+        accommodation_support = request.form.get("accommodation_support") == "yes"
+        residency_type = request.form.get("residency_type")
         year = int(request.form.get("year"))
         company.contact = request.form.get("contact")
 
@@ -344,6 +357,7 @@ def add_residency():
             residency=residency_type,
             salary=salary,
             workplace_type=workplace_type,
+            accommodation_support=accommodation_support,
             company_id=company.id,
             year=year,
             is_approved=False
@@ -381,8 +395,8 @@ def list_residencies():
         Company,
         Address
     ).join(Company, ResidencyPosition.company_id == Company.id
-    ).join(Address, Company.address_id == Address.id
-    ).all()
+        ).join(Address, Company.address_id == Address.id
+            ).all()
 
     # Prepare a list of dicts to send to template
     residencies_data = []
@@ -392,7 +406,8 @@ def list_residencies():
             "description": position.description,
             "num_of_residencies": position.num_of_residencies,
             "residency_type": position.residency,
-            "salary": position.salary,
+            "salary": f"${position.salary:,}" if position.salary else "Not specified",
+            "accommodation_support": "Yes" if position.accommodation_support else "No",
             "company_name": company.name,
             "workplace_type": position.workplace_type,
             "contact": company.contact,
@@ -504,7 +519,11 @@ def upload_students():
                 first_name = row.get('first_name', '').strip()
                 last_name = row.get('last_name', '').strip()
                 grade_str = row.get('grade', '').strip()
-                email = row.get('email', '').strip() or f"{first_name.lower()}.{last_name.lower()}@example.com"
+                email = row.get('email', '').strip()
+                if not email:
+                    print(f"Row {reader.line_num}: Missing email. Skipped.")
+                    error_count += 1
+                    continue
 
                 # Debug: Print current row data
                 print(f"Processing row {reader.line_num}: {first_name} {last_name}, grade: '{grade_str}'")
