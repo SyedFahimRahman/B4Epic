@@ -1,20 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+  .card, .btn, .form-control, .form-control-file, .table, .list-group-item {
+    border-radius: 1rem !important;
+  }
+  .card-header.bg-success, .btn-success {
+    background: #28a745 !important;
+    border-color: #28a745 !important;
+  }
+  .btn-outline-dark, .btn-outline-info {
+    border-radius: 1.5rem;
+  }
+  .btn-outline-dark {
+    border-color: #28a745;
+    color: #28a745;
+  }
+  .btn-outline-dark:hover {
+    background: #28a745;
+    color: #fff;
+  }
+  .btn-outline-info {
+    border-color: #28a745;
+    color: #28a745;
+  }
+  .btn-outline-info:hover {
+    background: #28a745;
+    color: #fff;
+  }
+  .card-header.bg-primary {
+    background:#28a745  !important;
+    border-color: #218838 !important;
+  }
+  .bg-secondary {
+    background: #e6f4ea !important;
+    color: #218838 !important;
+  }
+  .thead-light th {
+    background: #e6f4ea !important;
+    color: #218838 !important;
+  }
+</style>
+
 <div class="container py-4">
 
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        {{ messages[0] }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <h1 class="text-success mb-4">Admin Panel</h1>
+  <h1 class="text-success mb-4" style="font-weight:600;">Admin Panel</h1>
 
   <div class="row">
     <!-- Pending Users -->
@@ -117,7 +147,6 @@
   </div>
 </div>
 
-
   <!-- View Buttons -->
   <div class="mb-4">
     <button class="btn btn-outline-info mr-2" id="show-students">View All Students</button>
@@ -126,7 +155,7 @@
 
   <!-- Students Table -->
   <div id="student-table" style="display:none;">
-    <h3>All Students</h3>
+    <h3 class="text-success">All Students</h3>
     <table class="table table-bordered table-sm">
       <thead class="thead-light">
         <tr><th>ID</th><th>Email</th><th>First</th><th>Last</th><th>Year</th><th>Grade</th></tr>
@@ -148,7 +177,7 @@
 
   <!-- Companies Table -->
   <div id="company-table" style="display:none;">
-    <h3>All Companies</h3>
+    <h3 class="text-success">All Companies</h3>
     <table class="table table-bordered table-sm">
       <thead class="thead-light">
         <tr><th>ID</th><th>Name</th><th>Contact</th><th>Email</th></tr>
