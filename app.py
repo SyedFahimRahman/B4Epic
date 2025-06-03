@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from config import Config
 from allocations import allocate_students, get_allocation_details, notify_allocation
-from api import api_bp
+# from api import api_bp
 from sqlalchemy import func
 from flask_mail import Mail
 from dotenv import load_dotenv
@@ -28,7 +28,7 @@ db.init_app(app)
 mail.init_app(app)
 migrate = Migrate(app, db)
 
-app.register_blueprint(api_bp, url_prefix='/api')
+# app.register_blueprint(api_bp, url_prefix='/api')
 
 # Decorator to make student-only pages
 def student_required(f):

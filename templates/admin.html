@@ -1,185 +1,165 @@
 {% extends "base.html" %}
 
-{% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
-{% endblock %}
-
 {% block content %}
-<div class="admin-panel">
-  <h2>Admin Panel</h2>
+<div class="container py-4">
 
-  <div class="admin-sections">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ messages[0] }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <h1 class="text-success mb-4">Admin Panel</h1>
+
+  <div class="row">
     <!-- Pending Users -->
-    <div class="admin-section">
-      <h3>Pending Users</h3>
-      {% if pending_users %}
-        <table>
-          <thead>
-            <tr><th>Email</th><th>Role</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {% for user in pending_users %}
-              <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ user.role }}</td>
-                <td>
-                  <form method="POST" style="display:inline;">
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">Pending Users</div>
+        <div class="card-body">
+          {% if pending_users %}
+            <ul class="list-group">
+              {% for user in pending_users %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ user.username }} ({{ user.role }})
+                <div>
+                  <form method="POST" class="d-inline">
                     <input type="hidden" name="user_email" value="{{ user.username }}">
-                    <button type="submit" name="action" value="approve">Approve</button>
+                    <button name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                    <button name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
                   </form>
-                  <form method="POST" style="display:inline;">
-                    <input type="hidden" name="user_email" value="{{ user.username }}">
-                    <button type="submit" name="action" value="reject" style="background:#e57373;">Reject</button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p style="color:#777;">No users pending approval.</p>
-      {% endif %}
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No users pending approval.</p>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
-    <!-- Pending Residency Positions -->
-    <div class="admin-section">
-      <h3>Pending Residency Positions</h3>
-      {% if pending_positions %}
-        <table>
-          <thead>
-            <tr><th>Title</th><th>Company</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {% for pos in pending_positions %}
-              <tr>
-                <td>{{ pos.title }}</td>
-                <td>{{ pos.company.name }}</td>
-                <td>
-                  <form method="POST" style="display:inline;">
+    <!-- Pending Positions -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">Pending Residency Positions</div>
+        <div class="card-body">
+          {% if pending_positions %}
+            <ul class="list-group">
+              {% for pos in pending_positions %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ pos.title }} ({{ pos.company.name }})
+                <div>
+                  <form method="POST" class="d-inline">
                     <input type="hidden" name="position_id" value="{{ pos.id }}">
-                    <button type="submit" name="action" value="approve">Approve</button>
+                    <button name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                    <button name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
                   </form>
-                  <form method="POST" style="display:inline;">
-                    <input type="hidden" name="position_id" value="{{ pos.id }}">
-                    <button type="submit" name="action" value="reject" style="background:#e57373;">Reject</button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p style="color:#777;">No residency positions pending approval.</p>
-      {% endif %}
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No residency positions pending approval.</p>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 
-  <hr>
+ <!-- Upload Students + Allocation -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-secondary text-white">Student-Residency Matching</div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('upload_students') }}" enctype="multipart/form-data">
+      <div class="form-row align-items-end">
+        <div class="col-md-3 mb-3">
+          <label for="upload-year">Year:</label>
+          <select name="year" class="form-control" id="upload-year" required>
+            <option value="">Select year</option>
+            {% for y in range(1, 5) %}
+            <option value="{{ y }}">Year {{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-5 mb-3">
+          <label for="file">CSV File:</label>
+          <input type="file" name="file" class="form-control-file" id="file" required>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label>&nbsp;</label>
+          <button class="btn btn-outline-dark btn-block">Upload Students</button>
+        </div>
+      </div>
+    </form>
 
-  <!-- Upload and Allocation Forms -->
-  <h3>Student-Residency Matching</h3>
-  <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_students') }}" style="margin-bottom: 16px;">
-    <label for="upload-year">Select Year:</label>
-    <select name="year" id="upload-year" required>
-      <option value="" disabled selected>Select year</option>
-      <option value="1">Year 1</option>
-      <option value="2">Year 2</option>
-      <option value="3">Year 3</option>
-      <option value="4">Year 4</option>
-    </select>
+    <form method="POST" action="{{ url_for('run_allocate_students') }}">
+      <div class="form-row align-items-end">
+        <div class="col-md-3 mb-3">
+          <label for="allocation-year">Allocate for:</label>
+          <select name="year" class="form-control" id="allocation-year" required>
+            {% for y in range(1, 5) %}
+            <option value="{{ y }}">Year {{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-success btn-block">Run Allocations</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
-    <label for="student-csv">Upload CSV:</label>
-    <input type="file" name="file" id="student-csv" accept=".csv" required>
 
-    <button type="submit" class="admin-button" style="margin-top: 6px;">Upload Students</button>
-  </form>
+  <!-- View Buttons -->
+  <div class="mb-4">
+    <button class="btn btn-outline-info mr-2" id="show-students">View All Students</button>
+    <button class="btn btn-outline-info" id="show-companies">View All Companies</button>
+  </div>
 
-  <form method="POST" action="{{ url_for('run_allocate_students') }}" style="margin-top: 8px;">
-    <label for="allocation-year">Select Year for Allocation:</label>
-    <select name="year" id="allocation-year" required>
-      <option value="1">Year 1</option>
-      <option value="2">Year 2</option>
-      <option value="3">Year 3</option>
-      <option value="4">Year 4</option>
-    </select>
-    <button type="submit" class="admin-button" style="margin-left: 10px;">Run Allocations</button>
-  </form>
-
-  <hr>
-
-  <!-- View All Buttons -->
-  <button id="show-students" class="admin-button" style="margin-right: 10px;">View All Students</button>
-  <button id="show-companies" class="admin-button">View All Companies</button>
-
-  <!-- Student Table (hidden by default) -->
-  <div id="student-table" style="display: none;">
+  <!-- Students Table -->
+  <div id="student-table" style="display:none;">
     <h3>All Students</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Email</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Year</th>
-          <th>Grade</th>
-        </tr>
+    <table class="table table-bordered table-sm">
+      <thead class="thead-light">
+        <tr><th>ID</th><th>Email</th><th>First</th><th>Last</th><th>Year</th><th>Grade</th></tr>
       </thead>
       <tbody>
-        {% if students_with_users %}
-          {% for student, user in students_with_users %}
-          <tr>
-            <td>{{ student.id }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ student.first_name }}</td>
-            <td>{{ student.last_name }}</td>
-            <td>{{ student.year }}</td>
-            <td>{{ student.grade if student.grade else 'N/A' }}</td>
-          </tr>
-          {% endfor %}
-        {% elif students %}
-          {% for student in students %}
-          <tr>
-            <td>{{ student.id }}</td>
-            <td>
-              {% set user = User.query.get(student.id) %}
-              {{ user.username if user else 'N/A' }}
-            </td>
-            <td>{{ student.first_name }}</td>
-            <td>{{ student.last_name }}</td>
-            <td>{{ student.year }}</td>
-            <td>{{ student.grade if student.grade else 'N/A' }}</td>
-          </tr>
-          {% endfor %}
-        {% else %}
-          <tr><td colspan="6">No students found</td></tr>
-        {% endif %}
+        {% for student, user in students_with_users %}
+        <tr>
+          <td>{{ student.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ student.first_name }}</td>
+          <td>{{ student.last_name }}</td>
+          <td>{{ student.year }}</td>
+          <td>{{ student.grade or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <!-- Company Table (hidden by default) -->
-  <div id="company-table" style="display: none;">
+  <!-- Companies Table -->
+  <div id="company-table" style="display:none;">
     <h3>All Companies</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Contact</th>
-          <th>Email</th>
-        </tr>
+    <table class="table table-bordered table-sm">
+      <thead class="thead-light">
+        <tr><th>ID</th><th>Name</th><th>Contact</th><th>Email</th></tr>
       </thead>
       <tbody>
         {% for company in companies %}
         <tr>
           <td>{{ company.id }}</td>
           <td>{{ company.name }}</td>
-          <td>{{ company.contact if company.contact else 'N/A' }}</td>
-          <td>
-            {% set company_user = User.query.filter_by(company_id=company.id).first() %}
-            {{ company_user.username if company_user else 'N/A' }}
-          </td>
+          <td>{{ company.contact or 'N/A' }}</td>
+          <td>{{ User.query.filter_by(company_id=company.id).first().username or 'N/A' }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -188,13 +168,13 @@
 </div>
 
 <script>
-  document.getElementById('show-students').addEventListener('click', function() {
-    document.getElementById('student-table').style.display = 'block';
-    document.getElementById('company-table').style.display = 'none';
-  });
-  document.getElementById('show-companies').addEventListener('click', function() {
-    document.getElementById('company-table').style.display = 'block';
-    document.getElementById('student-table').style.display = 'none';
-  });
+document.getElementById("show-students").onclick = () => {
+  document.getElementById("student-table").style.display = 'block';
+  document.getElementById("company-table").style.display = 'none';
+};
+document.getElementById("show-companies").onclick = () => {
+  document.getElementById("student-table").style.display = 'none';
+  document.getElementById("company-table").style.display = 'block';
+};
 </script>
 {% endblock %}
