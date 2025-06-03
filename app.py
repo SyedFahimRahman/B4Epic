@@ -190,7 +190,7 @@ def signup():
                 hashed_password = generate_password_hash(password)
                 new_user = User(
                     username=email,
-                    password=password,
+                    password=hashed_password,
                     role=role,
                     is_approved=False
                 )
