@@ -48,7 +48,7 @@
           <div style="margin-bottom: 5px;">
             <strong>Salary:</strong>
             {% if res.salary %}
-              €{{ "%.2f"|format(float(res.salary)) }}
+              €{{ "%.2f"|format(res.salary|float)}}
             {% else %}
               Not specified
             {% endif %}
