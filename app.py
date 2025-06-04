@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
+
 db = SQLAlchemy() # for database management
 mail = Mail()  # mail initialization
 from models import *
@@ -38,7 +39,7 @@ def student_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# General ROutes
+# General Routes
 @app.route("/")
 def index():
 
@@ -60,34 +61,28 @@ def login():
 
         user = User.query.filter_by(username=email).first()
 
-    #Check credentials and role
         if user and check_password_hash(user.password, password):
-            if user.role == "admin":
-                session["email"] = email
-                session["role"] = "admin"
-                return redirect(url_for("admin_panel"))
+            if not user.is_approved:
+                flash("Your account is pending admin approval.")
+                return render_template("login.html")
 
+            session["email"] = email
+            session["role"] = user.role
+
+            if user.role == "admin":
+                return redirect(url_for("admin_panel"))
             elif user.role == "company":
-                if not user.is_approved:
-                    flash("Your account is pending admin approval.")
-                    return render_template("login.html")
-                session["email"] = email
-                session["role"] = "company"
                 session["company_id"] = user.id
                 return redirect(url_for("index"))
-
-            else:
-                # Check approval
-                if not user.is_approved:
-                    flash("Your account is pending admin approval.")
-                    return render_template("login.html")
-
-                session["email"] = email
-                session["role"] = user.role
+            elif user.role == "student":
                 session["student_id"] = user.id
                 return redirect(url_for("index"))
+
         flash("Invalid credentials.")
+        return render_template("login.html")
+
     return render_template("login.html")
+
 
 # Sign-up page for new users
 @app.route("/sign-up", methods=["GET", "POST"])
@@ -114,6 +109,9 @@ def signup():
             # Automatically assign admin to the first user
             if is_first_user:
                 role = "admin"
+                is_approved = True
+            else:
+                is_approved = False
 
             if role == "company":
                 # Company registration
@@ -145,7 +143,7 @@ def signup():
                     username=email,
                     password=hashed_password,
                     role="company",
-                    is_approved=False,
+                    is_approved=is_approved,
                     company_id=company.id
                 )
                 db.session.add(new_user)
@@ -166,7 +164,7 @@ def signup():
                     username=email,
                     password=hashed_password,
                     role="student",
-                    is_approved=False
+                    is_approved=is_approved
                 )
                 db.session.add(new_user)
                 db.session.commit()
@@ -190,7 +188,7 @@ def signup():
                     username=email,
                     password=hashed_password,
                     role=role,
-                    is_approved=False
+                    is_approved=is_approved
                 )
                 db.session.add(new_user)
                 db.session.commit()
