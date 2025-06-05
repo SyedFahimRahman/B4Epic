@@ -40,9 +40,8 @@
       </select>
     </label>
 
-
-    <label>Salary:
-      <input type="number" step="0.01" name="salary" placeholder="Enter the salary for this position">
+    <label>Salary (€):
+      <input type="number" step="0.01" min="0" name="salary" placeholder="Enter the salary for this position" required>
     </label>
 
     <label for="workplace_type">Workplace Type:</label>
@@ -54,16 +53,13 @@
     </select>
 
     <label>
-      <input type="checkbox" name="accommodation_support">
+      <input type="checkbox" name="accommodation_support" value="yes">
       Accommodation Support Provided
     </label>
-
 
     <label>Requirements:
       <textarea name="requirements" placeholder="List requirements here"></textarea>
     </label>
-
-
 
     <label>Company Contact:
       <input type="text" name="contact" placeholder="Enter company contact" required

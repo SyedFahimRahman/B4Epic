@@ -303,7 +303,11 @@ def add_residency():
             return redirect(url_for("add_residency"))
 
         try:
+            print("Form data received:", request.form.to_dict())
+
             salary = float(request.form.get("salary"))
+            print("Parsed salary value:", salary)
+
             if salary < 0:
                 raise ValueError("Salary cannot be negative.")
         except (TypeError, ValueError):
@@ -311,13 +315,14 @@ def add_residency():
             return redirect(url_for("add_residency"))
 
         workplace_type = request.form.get("workplace_type")
-        if workplace_type not in ["on-site", "remote", "hybrid"]:
+        if workplace_type not in ["onsite", "remote", "hybrid"]:
             flash("Please select a valid workplace type (remote, hybrid, onsite).")
             return redirect(url_for("add_residency"))
 
         accommodation_support = request.form.get("accommodation_support") == "yes"
         residency_type = request.form.get("residency_type")
         year = int(request.form.get("year"))
+        requirements = request.form.get("requirements")
         company.contact = request.form.get("contact")
 
         # Address fields from form
@@ -358,7 +363,8 @@ def add_residency():
             accommodation_support=accommodation_support,
             company_id=company.id,
             year=year,
-            is_approved=False
+            is_approved=False,
+            requirements=requirements
         )
 
         db.session.add(new_position)
@@ -404,10 +410,11 @@ def list_residencies():
             "description": position.description,
             "num_of_residencies": position.num_of_residencies,
             "residency_type": position.residency,
-            "salary": f"${position.salary:,}" if position.salary else "Not specified",
+            "salary": position.salary,
             "accommodation_support": "Yes" if position.accommodation_support else "No",
             "company_name": company.name,
             "workplace_type": position.workplace_type,
+            "requirements": position.requirements,
             "contact": company.contact,
             "address_line_1": address.line_1,
             "address_line_2": address.line_2,

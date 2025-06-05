@@ -56,8 +56,9 @@ class ResidencyPosition(db.Model):
     num_of_residencies = db.Column(db.Integer)
     is_approved = db.Column(db.Boolean, default=False)
     company = db.relationship('Company', backref='residency_positions', lazy=True)
-    salary= db.Column(db.Float)
+    salary = db.Column(db.Float, nullable=False, default=0.0)
     workplace_type = db.Column(db.String(100))
+    requirements = db.Column(db.Text, nullable=True)
     accommodation_support = db.Column(db.Boolean, nullable=False, default=False)
 
 class CompanyAssignment(db.Model):
