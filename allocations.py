@@ -5,7 +5,12 @@ from sqlalchemy.orm import joinedload
 
 from models import db, Student, Ranking, ResidencyPosition, CompanyAssignment, Company, User
 from flask_mail import Message
+
 def allocate_students(year):
+    # Validate year
+    if not isinstance(year, int):
+        return "Error during allocation: invalid year."
+
     # Clear old assignments for this round
     CompanyAssignment.query.filter_by(round_id=1).delete()
     db.session.commit()
@@ -33,7 +38,8 @@ def allocate_students(year):
             slot_info = residency_slots.get(rank.residency_id)
             if slot_info and slot_info["assigned"] < slot_info["total"]:
                 # Assign the student to this residency
-                res_pos = ResidencyPosition.query.get(rank.residency_id)
+                #res_pos = ResidencyPosition.query.get(rank.residency_id)
+                res_pos = db.session.get(ResidencyPosition, rank.residency_id)
                 assignment = CompanyAssignment(
                     student_id=student.id,
                     company_id=res_pos.company_id,
@@ -62,7 +68,8 @@ def get_allocation_details():
 
     result = []
     for alloc in allocations:
-        student = Student.query.get(alloc.student_id)
+        #student = Student.query.get(alloc.student_id)
+        student = db.session.get(Student, alloc.student_id)
         residency = alloc.residency
         company = residency.company if residency else None
 
