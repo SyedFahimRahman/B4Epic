@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}All Residency Positions{% endblock %}
+
+{% block content %}
+
+  {% if student %}
+    {# <p>DEBUG: student.year = {{ student.year }}</p> #}
+  {% endif %}
+
+  {% set year_names = {1: "First", 2: "Second", 3: "Third", 4: "Fourth"} %}
+
+  {% if student %}
+    <h1 style="color:#2e7d32; margin-bottom: 18px;">
+      All {{ year_names[student.year|int] }} Year Positions
+    </h1>
+    <div style="margin-bottom: 18px; font-size: 1.1em; color: #388e3c;">
+      Viewing as <b>{{ student.first_name }} {{ student.last_name }}</b> (Year {{ student.year }})
+    </div>
+  {% else %}
+    <h1 style="color:#2e7d32; margin-bottom: 18px;">All Residency Positions</h1>
+  {% endif %}
+
+  {% if residencies %}
+    <div style="display: flex; flex-direction: column; gap: 22px;">
+      {% for res in residencies %}
+        <div style="
+          border: 2px solid #c8e6c9;
+          border-radius: 12px;
+          background: #f7faf7;
+          box-shadow: 0 2px 8px rgba(46,125,50,0.05);
+          padding: 20px 26px;">
+
+          <div style="font-size: 1.25em; font-weight: bold; color: #2e7d32; margin-bottom: 6px;">
+            {{ res.title }}
+          </div>
+
+          <div style="font-size: 1.07em; color: #388e3c; margin-bottom: 2px;">
+            {{ res.company_name }}
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Residency Type:</strong> {{ res.residency_type }}
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Description:</strong> {{ res.description }}
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Requirements:</strong> {{ res.requirements }}
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Salary:</strong>
+            {% if res.salary is not none %}
+              €{{ "%.2f"|format(res.salary|float) }}
+            {% else %}
+              Not specified
+            {% endif %}
+
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Workplace Type:</strong> {{ res.workplace_type }}
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Accommodation Support:</strong> {{ "Yes" if res.accommodation_support else "No" }}
+          </div>
+
+          <div style="margin-bottom: 5px;">
+            <strong>Number of Positions:</strong> {{ res.num_of_residencies }}
+          </div>
+
+          <div style="margin-bottom: 3px;">
+            <strong>Contact:</strong> {{ res.contact }}
+          </div>
+
+          <div style="font-size: 0.97em; color: #333;">
+            <strong>Address:</strong>
+            {{ res.address_line_1 }}{% if res.address_line_2 %}, {{ res.address_line_2 }}{% endif %},
+            {{ res.town }}, {{ res.county }}, {{ res.eircode }}
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="color: #388e3c; font-size: 1.1em;">No residency positions available yet.</div>
+  {% endif %}
+
+{% endblock %}

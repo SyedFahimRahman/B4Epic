@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #1565C0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .content {
+      padding: 30px;
+      color: #333;
+    }
+    .footer {
+      padding: 20px;
+      font-size: 12px;
+      text-align: center;
+      color: #888;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #1565C0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>ISE Student Assignment</h2>
+    </div>
+    <div class="content">
+      <p>Dear {{ company.name }},</p>
+      <p>A student has been successfully assigned to your residency position:</p>
+      <p class="highlight">{{ position.title }}</p>
+      <p>Student assigned: <strong>{{ student.first_name }} {{ student.last_name }}</strong></p>
+      <p>We appreciate your partnership and support.</p>
+    </div>
+    <div class="footer">
+      © {{ current_year }} ISE Residency System. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

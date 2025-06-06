@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Rank Residency Positions{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='rank_residencies.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Rank Year {{ student.year }} Residency Positions</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" id="rankForm">
+        <ul id="positionsList">
+            {% for pos in positions %}
+            <li data-id="{{ pos.id }}">
+                Company: {{ pos.company.name }}, Job Title: {{ pos.title }}, Slots: {{ pos.num_of_residencies}}
+            </li>
+            {% endfor %}
+        </ul>
+        <input type="hidden" name="position_order" id="positionOrder">
+        <button type="submit">Save Rankings</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    var el = document.getElementById('positionsList');
+    var sortable = Sortable.create(el, {
+        animation: 150,
+        onEnd: function () {
+            var order = [];
+            el.querySelectorAll('li').forEach(function(li) {
+                order.push(li.getAttribute('data-id'));
+            });
+            document.getElementById('positionOrder').value = order.join(',');
+        }
+    });
+    document.getElementById('rankForm').onsubmit = function() {
+        var order = [];
+        el.querySelectorAll('li').forEach(function(li) {
+            order.push(li.getAttribute('data-id'));
+        });
+        document.getElementById('positionOrder').value = order.join(',');
+    };
+</script>
+{% endblock %}

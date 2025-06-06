@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .card, .btn, .form-control, .form-control-file, .table, .list-group-item {
+    border-radius: 1rem !important;
+  }
+  .card-header.bg-success, .btn-success {
+    background: #28a745 !important;
+    border-color: #28a745 !important;
+  }
+  .btn-outline-dark, .btn-outline-info {
+    border-radius: 1.5rem;
+  }
+  .btn-outline-dark {
+    border-color: #28a745;
+    color: #28a745;
+  }
+  .btn-outline-dark:hover {
+    background: #28a745;
+    color: #fff;
+  }
+  .btn-outline-info {
+    border-color: #28a745;
+    color: #28a745;
+  }
+  .btn-outline-info:hover {
+    background: #28a745;
+    color: #fff;
+  }
+  .card-header.bg-primary {
+    background:#28a745  !important;
+    border-color: #218838 !important;
+  }
+  .bg-secondary {
+    background: #e6f4ea !important;
+    color: #218838 !important;
+  }
+  .thead-light th {
+    background: #e6f4ea !important;
+    color: #218838 !important;
+  }
+</style>
+
+<div class="container py-4">
+
+  <h1 class="text-success mb-4" style="font-weight:600;">Admin Panel</h1>
+
+  <div class="row">
+    <!-- Pending Users -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">Pending Users</div>
+        <div class="card-body">
+          {% if pending_users %}
+            <ul class="list-group">
+              {% for user in pending_users %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ user.username }} ({{ user.role }})
+                <div>
+                  <form method="POST" class="d-inline">
+                    <input type="hidden" name="user_email" value="{{ user.username }}">
+                    <button name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                    <button name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
+                  </form>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No users pending approval.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Positions -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">Pending Residency Positions</div>
+        <div class="card-body">
+          {% if pending_positions %}
+            <ul class="list-group">
+              {% for pos in pending_positions %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ pos.title }} ({{ pos.company.name }})
+                <div>
+                  <form method="POST" class="d-inline">
+                    <input type="hidden" name="position_id" value="{{ pos.id }}">
+                    <button name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                    <button name="action" value="reject" class="btn btn-sm btn-danger">Reject</button>
+                  </form>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No residency positions pending approval.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <!-- Upload Students + Allocation -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-secondary text-white">Student-Residency Matching</div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('upload_students') }}" enctype="multipart/form-data">
+      <div class="form-row align-items-end">
+        <div class="col-md-3 mb-3">
+          <label for="upload-year">Year:</label>
+          <select name="year" class="form-control" id="upload-year" required>
+            <option value="">Select year</option>
+            {% for y in range(1, 5) %}
+            <option value="{{ y }}">Year {{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-5 mb-3">
+          <label for="file">CSV File:</label>
+          <input type="file" name="file" class="form-control-file" id="file" required>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label>&nbsp;</label>
+          <button class="btn btn-outline-dark btn-block">Upload Students</button>
+        </div>
+      </div>
+    </form>
+
+    <form method="POST" action="{{ url_for('run_allocate_students') }}">
+      <div class="form-row align-items-end">
+        <div class="col-md-3 mb-3">
+          <label for="allocation-year">Allocate for:</label>
+          <select name="year" class="form-control" id="allocation-year" required>
+            {% for y in range(1, 5) %}
+            <option value="{{ y }}">Year {{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-success btn-block">Run Allocations</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <!-- View Buttons -->
+  <div class="mb-4">
+    <button class="btn btn-outline-info mr-2" id="show-students">View All Students</button>
+    <button class="btn btn-outline-info" id="show-companies">View All Companies</button>
+  </div>
+
+  <!-- Students Table -->
+  <div id="student-table" style="display:none;">
+    <h3 class="text-success">All Students</h3>
+    <table class="table table-bordered table-sm">
+      <thead class="thead-light">
+        <tr><th>ID</th><th>Email</th><th>First</th><th>Last</th><th>Year</th><th>Grade</th></tr>
+      </thead>
+      <tbody>
+        {% for student, user in students_with_users %}
+        <tr>
+          <td>{{ student.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ student.first_name }}</td>
+          <td>{{ student.last_name }}</td>
+          <td>{{ student.year }}</td>
+          <td>{{ student.grade or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Companies Table -->
+  <div id="company-table" style="display:none;">
+    <h3 class="text-success">All Companies</h3>
+    <table class="table table-bordered table-sm">
+      <thead class="thead-light">
+        <tr><th>ID</th><th>Name</th><th>Contact</th><th>Email</th></tr>
+      </thead>
+      <tbody>
+        {% for company in companies %}
+        <tr>
+          <td>{{ company.id }}</td>
+          <td>{{ company.name }}</td>
+          <td>{{ company.contact or 'N/A' }}</td>
+          <td>{{ User.query.filter_by(company_id=company.id).first().username or 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.getElementById("show-students").onclick = () => {
+  document.getElementById("student-table").style.display = 'block';
+  document.getElementById("company-table").style.display = 'none';
+};
+document.getElementById("show-companies").onclick = () => {
+  document.getElementById("student-table").style.display = 'none';
+  document.getElementById("company-table").style.display = 'block';
+};
+</script>
+{% endblock %}

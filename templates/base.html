@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1024" />  <!-- fixed width viewport -->
+
+    <!-- Bootstrap (Desktop only use case) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon" />
+
+    {% block head %}{% endblock %}
+    <title>{% block title %}ISE Jobs Board{% endblock %}</title>
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .navbar {
+        border-bottom: 1px solid #dee2e6;
+      }
+      .container-fixed {
+        width: 1000px;
+        margin: 40px auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Static Desktop Navbar -->
+    <nav class="navbar navbar-light bg-white px-5">
+      <a class="navbar-brand d-flex align-items-baseline" style="color: forestgreen; font-size: 1.5em;">
+        <span style="font-size: 2em; font-weight: bold; line-height: 1;">[ISE]</span>
+        <span class="ml-2" style="position: relative; top: -4px;">Jobs Board</span>
+      </a>
+      <div class="d-flex">
+        <ul class="navbar-nav flex-row">
+          {% if session.get("role") == "admin" and session.get("email") %}
+             <li class="nav-item px-3">
+                 <a class="nav-link" href="{{ url_for('admin_panel') }}">Home</a>
+             </li>
+            {% else %}
+                <li class="nav-item px-3">
+                     <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                </li>
+            {% endif %}
+
+
+          {% if session.get("email") %}
+            <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('list_residencies') }}">Residencies</a></li>
+            <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+          {% else %}
+            <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+            <li class="nav-item px-3"><a class="nav-link" href="{{ url_for('signup') }}">Sign up</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+   <div class="container-fixed">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+        {{ messages[0] }}
+        <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+
+
+    <!-- Main Content -->
+    <div class="container-fixed">
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- Desktop Footer -->
+    <footer class="text-muted border-top py-3 text-center mt-4">
+      <div class="small">
+        &copy; {{ current_year or 2025 }} ISE Residency System — Desktop Version Only
+      </div>
+    </footer>
+
+    <!-- JS for Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

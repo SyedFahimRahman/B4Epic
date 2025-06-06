@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='add_residency.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="add-residency-container">
+  <h2>Post a New Residency</h2>
+  <form method="post">
+    <label>Title:
+      <input type="text" name="title" placeholder="Enter residency title" required>
+    </label>
+
+    <label>Description:
+      <textarea name="description" placeholder="Enter detailed description" required></textarea>
+    </label>
+
+    <label>Number of Residencies:
+      <input type="number" name="num_of_residencies" min="1" placeholder="e.g. 5" required>
+    </label>
+
+    <label for="year">Year:</label>
+    <select name="year" id="year" required>
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
+    </select>
+
+    <label>Residency Type:
+      <select name="residency_type" required>
+        <option value="" disabled selected>Select type</option>
+        <option value="Type1">R1</option>
+        <option value="Type2">R1 + 2</option>
+        <option value="Type3">R2</option>
+        <option value="Type4">R3</option>
+        <option value="Type5">R4</option>
+        <option value="Type6">R5</option>
+      </select>
+    </label>
+
+    <label>Salary (€):
+      <input type="number" step="0.01" min="0" name="salary" placeholder="Enter the salary for this position" required>
+    </label>
+
+    <label for="workplace_type">Workplace Type:</label>
+    <select name="workplace_type" id="workplace_type" required>
+      <option value="" disabled selected>Please select</option>
+      <option value="onsite">Onsite</option>
+      <option value="remote">Remote</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+
+    <label>
+      <input type="checkbox" name="accommodation_support" value="yes">
+      Accommodation Support Provided
+    </label>
+
+    <label>Requirements:
+      <textarea name="requirements" placeholder="List requirements here"></textarea>
+    </label>
+
+    <label>Company Contact:
+      <input type="text" name="contact" placeholder="Enter company contact" required
+        value="{{ company.contact if company else '' }}">
+    </label>
+
+    <label>Address Line 1:
+      <input type="text" name="line_1" placeholder="Enter street address" required
+        value="{{ address.line_1 if address else '' }}">
+    </label>
+
+    <label>Address Line 2:
+      <input type="text" name="line_2" placeholder="Enter address line 2"
+        value="{{ address.line_2 if address else '' }}">
+    </label>
+
+    <label>Town:
+      <input type="text" name="town" placeholder="Enter town/city" required
+        value="{{ address.town if address else '' }}">
+    </label>
+
+    <label>County:
+      <input type="text" name="county" placeholder="Enter county" required
+        value="{{ address.county if address else '' }}">
+    </label>
+
+    <label>Eircode:
+      <input type="text" name="eircode" placeholder="Enter Eircode" required
+        value="{{ address.eircode if address else '' }}">
+    </label>
+
+    <button type="submit">Post Residency</button>
+  </form>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+</div>
+{% endblock %}
